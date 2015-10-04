@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>sortDlg</class>
+ <widget class="QDialog" name="sortDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>539</width>
+    <height>714</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>IEEE Testbank Tool - 1/1000 - ENEE499H_Bob_2015_F_Bob_Midterm.pdf</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="sortingLayout">
+     <property name="margin">
+      <number>4</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="headerLbl">
+       <property name="font">
+        <font>
+         <family>DejaVu Sans</family>
+         <pointsize>20</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="text">
+        <string>IEEE Testbank Tool</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="testRangeLayout">
+       <item>
+        <widget class="QGroupBox" name="testRangeGroupBox">
+         <property name="title">
+          <string>Test Range:</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QCheckBox" name="lockTestRangeChk">
+            <property name="text">
+             <string>Check to lock the test range.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="testRangeHLayout">
+            <property name="rightMargin">
+             <number>30</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="fromLbl">
+              <property name="text">
+               <string>From</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="startRangeSpinBox">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="toLbl">
+              <property name="text">
+               <string>to</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="endRangeSpinBox">
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="testNavigationGroupBox">
+       <property name="title">
+        <string>Test Navigation</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="2" column="2">
+         <widget class="QPushButton" name="openTestBtn">
+          <property name="text">
+           <string>Open</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QPushButton" name="nextTestBtn">
+          <property name="text">
+           <string>&gt;&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QPushButton" name="firstTestBtn">
+          <property name="text">
+           <string>||&lt;</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="currentTestHeaderLbl">
+          <property name="text">
+           <string>Current Test:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <widget class="QPushButton" name="lastTestBtn">
+          <property name="text">
+           <string>&gt;||</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="prevTestBtn">
+          <property name="text">
+           <string>&lt;&lt;</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="4">
+         <widget class="QLabel" name="currentTestLbl">
+          <property name="text">
+           <string>ENEE499H_Bob_2015_F_Bob_Midterm.pdf (1/1000)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="testMetadataGroupBox">
+       <property name="title">
+        <string>Test Metadata</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="examCommandLayout">
+          <item>
+           <widget class="QPushButton" name="autofillBtn">
+            <property name="text">
+             <string>Autofill</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="revertBtn">
+            <property name="text">
+             <string>Revert</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="saveBtn">
+            <property name="text">
+             <string>Save</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="validTestLayout">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="validTestLbl">
+            <property name="text">
+             <string>Is the test valid?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="validTestAllGoodRadio">
+            <property name="text">
+             <string>All good</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">testValidButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="validTestWrongTestRadio">
+            <property name="text">
+             <string>Wrong Test</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">testValidButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="validTestJunkRadio">
+            <property name="text">
+             <string>Junk</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">testValidButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="classLayout">
+          <item>
+           <widget class="QLabel" name="classLbl">
+            <property name="text">
+             <string>Class:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="classTxt">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="semesterLayout">
+          <item>
+           <widget class="QLabel" name="semesterLbl">
+            <property name="text">
+             <string>Semester:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="semesterCBox">
+            <item>
+             <property name="text">
+              <string>Fall</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Winter</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Spring</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Summer</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="yearLbl">
+            <property name="text">
+             <string>Year:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="yearSpinBox">
+            <property name="minimum">
+             <number>1990</number>
+            </property>
+            <property name="maximum">
+             <number>2020</number>
+            </property>
+            <property name="value">
+             <number>2015</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="profLayout">
+          <item>
+           <widget class="QLabel" name="profLastNameLbl">
+            <property name="text">
+             <string>Professor Last Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="profLastNameTxt"/>
+          </item>
+          <item>
+           <widget class="QLabel" name="profFirstNameLbl">
+            <property name="text">
+             <string>Professor First Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="profFirstNameTxt"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="typeLayout">
+          <item>
+           <widget class="QLabel" name="testTypeLbl">
+            <property name="text">
+             <string>Type:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="testTypeQuizRadio">
+            <property name="text">
+             <string>Quiz</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">testTypeBtnGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="testTypeMidtermRadio">
+            <property name="text">
+             <string>Midterm</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">testTypeBtnGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="testTypeFinalRadio">
+            <property name="text">
+             <string>Final</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">testTypeBtnGroup</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="testNumLayout">
+          <item>
+           <widget class="QLabel" name="testNumLbl">
+            <property name="text">
+             <string>Test #:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="testNumSpinBox"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="addlExamInfoLayout">
+          <item>
+           <widget class="QLabel" name="addlExamInfoLbl">
+            <property name="text">
+             <string>Additional Exam Info:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="addlExamInfoTxt"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="fileNotesLbl">
+          <property name="text">
+           <string>File notes:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPlainTextEdit" name="fileNotesTxt"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="testTypeBtnGroup"/>
+  <buttongroup name="testValidButtonGroup"/>
+ </buttongroups>
+</ui>
