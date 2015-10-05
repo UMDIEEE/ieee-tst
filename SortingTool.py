@@ -32,10 +32,11 @@ class IESThread(QtCore.QThread):
         self.wait()
     
     def run(self):
-        file_table, total_num_files = IEEEExamScanner.scanDir(self.srcdir, self.progCallback, self.errCallback)
+        res = IEEEExamScanner.scanDir(self.srcdir, self.progCallback, self.errCallback)
         
         # Success!
-        if file_table:
+        if res:
+            file_table, total_num_files = res
             self.tableSignal.emit(file_table, total_num_files)
     
     def progCallback(self, current_num, total_num, file_name):
