@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>387</width>
-    <height>241</height>
+    <width>401</width>
+    <height>418</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -44,32 +44,130 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="testbankDirLbl">
-       <property name="text">
-        <string>Testbank Directory:</string>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Start from Scratch</string>
        </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="nameLbl">
+          <property name="text">
+           <string>Name:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="nameTxt"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="testRangeLbl">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Select the testbank directory first, then select your test range!</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="testRangeHLayout">
+          <property name="rightMargin">
+           <number>30</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="fromLbl">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>From</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="startRangeSpinBox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="toLbl">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>to</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="endRangeSpinBox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="statusLbl">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="testbankDirLbl">
+          <property name="text">
+           <string>Testbank Directory:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="browseLayout">
+          <item>
+           <widget class="QLineEdit" name="testbankDirTxt"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="browseBtn">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="goBtn">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Go &gt;</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="browseLayout">
-       <item>
-        <widget class="QLineEdit" name="testbankDirTxt"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="browseBtn">
-         <property name="text">
-          <string>Browse...</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="goBtn">
-         <property name="text">
-          <string>Go &gt;</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </item>
      <item>
       <widget class="QLabel" name="orLbl">
@@ -90,29 +188,38 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="prevSessionLbl">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Resume from Before</string>
        </property>
-       <property name="text">
-        <string>No previous session detected.</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="resumeBtn">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Resume from where I left off...</string>
-       </property>
-       <property name="checkable">
-        <bool>false</bool>
-       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLabel" name="prevSessionLbl">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>No previous session detected.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resumeBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Resume from where I left off...</string>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>

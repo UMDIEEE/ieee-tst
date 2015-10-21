@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>539</width>
-    <height>714</height>
+    <height>636</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -47,71 +47,7 @@
       </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="testRangeLayout">
-       <item>
-        <widget class="QGroupBox" name="testRangeGroupBox">
-         <property name="title">
-          <string>Test Range:</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QCheckBox" name="lockTestRangeChk">
-            <property name="text">
-             <string>Check to lock the test range.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="testRangeHLayout">
-            <property name="rightMargin">
-             <number>30</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="fromLbl">
-              <property name="text">
-               <string>From</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="startRangeSpinBox">
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="toLbl">
-              <property name="text">
-               <string>to</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="endRangeSpinBox">
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
+      <layout class="QVBoxLayout" name="testRangeLayout"/>
      </item>
      <item>
       <widget class="QGroupBox" name="testNavigationGroupBox">
