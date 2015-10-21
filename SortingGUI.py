@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'Sorting.ui'
 #
-# Created: Sun Oct 04 14:05:03 2015
+# Created: Tue Oct 20 23:28:32 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_sortDlg(object):
     def setupUi(self, sortDlg):
         sortDlg.setObjectName(_fromUtf8("sortDlg"))
-        sortDlg.resize(539, 714)
+        sortDlg.resize(539, 636)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -50,36 +50,6 @@ class Ui_sortDlg(object):
         self.sortingLayout.addWidget(self.headerLbl)
         self.testRangeLayout = QtGui.QVBoxLayout()
         self.testRangeLayout.setObjectName(_fromUtf8("testRangeLayout"))
-        self.testRangeGroupBox = QtGui.QGroupBox(sortDlg)
-        self.testRangeGroupBox.setObjectName(_fromUtf8("testRangeGroupBox"))
-        self.verticalLayout_3 = QtGui.QVBoxLayout(self.testRangeGroupBox)
-        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
-        self.lockTestRangeChk = QtGui.QCheckBox(self.testRangeGroupBox)
-        self.lockTestRangeChk.setObjectName(_fromUtf8("lockTestRangeChk"))
-        self.verticalLayout_3.addWidget(self.lockTestRangeChk)
-        self.testRangeHLayout = QtGui.QHBoxLayout()
-        self.testRangeHLayout.setContentsMargins(-1, -1, 30, -1)
-        self.testRangeHLayout.setObjectName(_fromUtf8("testRangeHLayout"))
-        self.fromLbl = QtGui.QLabel(self.testRangeGroupBox)
-        self.fromLbl.setAlignment(QtCore.Qt.AlignCenter)
-        self.fromLbl.setObjectName(_fromUtf8("fromLbl"))
-        self.testRangeHLayout.addWidget(self.fromLbl)
-        self.startRangeSpinBox = QtGui.QSpinBox(self.testRangeGroupBox)
-        self.startRangeSpinBox.setAlignment(QtCore.Qt.AlignCenter)
-        self.startRangeSpinBox.setMinimum(1)
-        self.startRangeSpinBox.setObjectName(_fromUtf8("startRangeSpinBox"))
-        self.testRangeHLayout.addWidget(self.startRangeSpinBox)
-        self.toLbl = QtGui.QLabel(self.testRangeGroupBox)
-        self.toLbl.setAlignment(QtCore.Qt.AlignCenter)
-        self.toLbl.setObjectName(_fromUtf8("toLbl"))
-        self.testRangeHLayout.addWidget(self.toLbl)
-        self.endRangeSpinBox = QtGui.QSpinBox(self.testRangeGroupBox)
-        self.endRangeSpinBox.setAlignment(QtCore.Qt.AlignCenter)
-        self.endRangeSpinBox.setMinimum(1)
-        self.endRangeSpinBox.setObjectName(_fromUtf8("endRangeSpinBox"))
-        self.testRangeHLayout.addWidget(self.endRangeSpinBox)
-        self.verticalLayout_3.addLayout(self.testRangeHLayout)
-        self.testRangeLayout.addWidget(self.testRangeGroupBox)
         self.sortingLayout.addLayout(self.testRangeLayout)
         self.testNavigationGroupBox = QtGui.QGroupBox(sortDlg)
         self.testNavigationGroupBox.setObjectName(_fromUtf8("testNavigationGroupBox"))
@@ -248,10 +218,6 @@ class Ui_sortDlg(object):
     def retranslateUi(self, sortDlg):
         sortDlg.setWindowTitle(_translate("sortDlg", "IEEE Testbank Tool - 1/1000 - ENEE499H_Bob_2015_F_Bob_Midterm.pdf", None))
         self.headerLbl.setText(_translate("sortDlg", "IEEE Testbank Tool", None))
-        self.testRangeGroupBox.setTitle(_translate("sortDlg", "Test Range:", None))
-        self.lockTestRangeChk.setText(_translate("sortDlg", "Check to lock the test range.", None))
-        self.fromLbl.setText(_translate("sortDlg", "From", None))
-        self.toLbl.setText(_translate("sortDlg", "to", None))
         self.testNavigationGroupBox.setTitle(_translate("sortDlg", "Test Navigation", None))
         self.openTestBtn.setText(_translate("sortDlg", "Open", None))
         self.nextTestBtn.setText(_translate("sortDlg", ">>", None))
