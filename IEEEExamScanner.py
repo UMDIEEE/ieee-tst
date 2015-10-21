@@ -86,7 +86,7 @@ def scanDir(srcdir, progCallback, errCallback):
     file_table = []
     bad_list = []
 
-    print("Processing %i files:" % num_files)
+    print("Processing %i files..." % num_files)
     
     all_valid = True
     
@@ -168,6 +168,70 @@ def scanDir(srcdir, progCallback, errCallback):
         return
     
     return (file_table, num_files)
+
+# progCallback(current_num, total_num, file_name)
+# errCallback(errstr)
+def validateDir(srcdir, progCallback, errCallback):
+    print("Loading directory list...")
+
+    all_files = os.listdir(srcdir)
+    processed_files = 0
+    num_files = len(all_files)
+
+    #file_re = re.compile(r"^([A-Z]{4}\d{3}[A-Z]*)_(\d{4})_([SUFW])_([A-Za-z-]+)_(.*)\.(?:(?i)pdf|doc|docx|ppt|pptx|jpg|jpeg|zip|rar|gif)$")
+
+    ext_regex_part = "|".join([x[1:] if type(x) == str else "|".join([y[1:] for y in x]) for x in format_exts.values()])
+    final_file_re_txt = r"^([A-Z]{4}\d{3}[A-Z]*)_(\d{4})_([SUFW])_([A-Za-z-]+)_(.*)\.(?:(?i)" + ext_regex_part + r")$"
+    file_part_re_txt = r"^([A-Z]{4}\d{3}[A-Z]*)_(\d{4})_([SUFW])_([A-Za-z-]+)_(.*)"
+
+    file_re = re.compile(final_file_re_txt)
+    file_part_re = re.compile(file_part_re_txt)
+    
+    file_list = []
+    bad_list = []
+
+    print("Validating %i files (filename format only)..." % num_files)
+    
+    all_valid = True
+    
+    for file in all_files:
+        processed_files += 1
+        warn_msg = None
+        
+        progCallback(processed_files, num_files, file)
+        
+        #if file_re.match(file):
+        #file_type = str(mag.from_file(os.path.join(srcdir, file)))
+        
+        cur_file_path = os.path.join(srcdir, file)
+        
+        if not os.path.isfile(cur_file_path):
+            print "%i / %i | %s | Not a file, skipping." % (processed_files, num_files, file)
+            continue
+        
+        if file_part_re.match(file):
+            file_list.append(file)
+        else:
+            warn_msg = "%i / %i | %s | Invalid filename format" % (processed_files, num_files, file)
+        
+        if warn_msg:
+            # Format warn_msg
+            warn_msg_parts = warn_msg.split(" | ")
+            warn_msg_parts[0] = "\033[1m%s\033[0m" % warn_msg_parts[0]
+            warn_msg_parts[1] = "\033[36m%s\033[0m" % warn_msg_parts[1]
+            warn_msg_parts[2] = "\033[35m%s\033[0m" % warn_msg_parts[2]
+            warn_msg = " | ".join(warn_msg_parts) + "\033[0m"
+            
+            print(warn_msg)
+            bad_list.append(warn_msg)
+            all_valid = False
+    
+    if not all_valid:
+        print("ERROR: Problems with the list of files detected.")
+        errCallback("Problems with the list of files detected. Files include:\n\n" + "\n".join(bad_list))
+        return
+    
+    return (file_list, num_files)
 
 # Folder format:
 # CLASS_XXXX > #00s > ### > Prof > YEAR > Semester
