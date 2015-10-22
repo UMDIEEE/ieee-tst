@@ -189,6 +189,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
         curdir = str(self.testbankDirTxt.text())
         
         self.statusLbl.setStyleSheet("")
+        self.statusLbl.setMargin(0)
         self.statusLbl.hide()
         
         if curdir == "":
@@ -269,6 +270,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
         
         self.statusLbl.setStyleSheet("background-color: #660000; color: #FFFFFF;")
         self.statusLbl.setText("An error occurred while validating the files! <a style=\"color: white;\" href=\"#show_error\">Show Details...</a>")
+        self.statusLbl.setMargin(5)
         self.statusLbl.show()
         
         self.err_str = err_str
