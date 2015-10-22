@@ -55,21 +55,28 @@
         <string>Test Navigation</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="2" column="2">
+        <item row="1" column="0" colspan="4">
+         <widget class="QLabel" name="currentTestLbl">
+          <property name="text">
+           <string>ENEE499H_Bob_2015_F_Bob_Midterm.pdf (1/1000)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
          <widget class="QPushButton" name="openTestBtn">
           <property name="text">
            <string>Open</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
+        <item row="4" column="3">
          <widget class="QPushButton" name="nextTestBtn">
           <property name="text">
            <string>&gt;&gt;</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="4" column="0">
          <widget class="QPushButton" name="firstTestBtn">
           <property name="text">
            <string>||&lt;</string>
@@ -83,24 +90,24 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="4">
+        <item row="4" column="4">
          <widget class="QPushButton" name="lastTestBtn">
           <property name="text">
            <string>&gt;||</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="4" column="1">
          <widget class="QPushButton" name="prevTestBtn">
           <property name="text">
            <string>&lt;&lt;</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="4">
-         <widget class="QLabel" name="currentTestLbl">
-          <property name="text">
-           <string>ENEE499H_Bob_2015_F_Bob_Midterm.pdf (1/1000)</string>
+        <item row="3" column="0" colspan="5">
+         <widget class="QSlider" name="testSlider">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
          </widget>
         </item>
