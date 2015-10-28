@@ -56,3 +56,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Generated GUI files
+itst/gui/

@@ -3,9 +3,9 @@ import sys
 from PyQt4 import uic
 
 ui_to_py = [
-            [ "Setup.ui", "SetupGUI.py" ],
-            [ "Sorting.ui", "SortingGUI.py" ],
-            [ "Details.ui", "DetailsGUI.py" ],
+            [ "Setup.ui", os.path.join("itst", "gui", "SetupGUI.py") ],
+            [ "Sorting.ui", os.path.join("itst", "gui", "SortingGUI.py") ],
+            [ "Details.ui", os.path.join("itst", "gui", "DetailsGUI.py") ],
            ]
 
 for ui2py_pair in ui_to_py:
