@@ -5,6 +5,7 @@
 import magic
 import colorama
 import os
+import sys
 import re
 
 format_exts = {
@@ -59,14 +60,22 @@ supported_mime_types = format_exts.keys()
 def scanDir(srcdir, progCallback, errCallback):
     print("Loading magic mime file...")
     
-    try:
-        fh = open("magic-db/magic.mgc", "r")
-        fh.close()
-        mag = magic.Magic(magic_file="magic-db/magic.mgc", mime=True)
-    except IOError:
-        print("ERROR: No magic file database found! (magic-db/magic.mgc)")
-        errCallback("No magic file database found!\nMake sure the magic database (magic-db/magic.mgc) exists.")
-        return
+    if sys.platform == "win32":
+        try:
+            fh = open("magic-db/magic.mgc", "r")
+            fh.close()
+            mag = magic.Magic(magic_file="magic-db/magic.mgc", mime=True)
+        except IOError:
+            print("ERROR: No magic file database found! (magic-db/magic.mgc)")
+            errCallback("No magic file database found!\nMake sure the magic database (magic-db/magic.mgc) exists.")
+            return
+    else:
+        try:
+            mag = magic.Magic(mime=True)
+        except:
+            print("ERROR: Failed to initialize magic/load magic database!")
+            errCallback("Failed to initialize magic/load magic database!")
+            return
 
     print("Loading directory list...")
 
