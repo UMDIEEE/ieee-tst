@@ -237,7 +237,12 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
             self.last_focus.setFocus()
     
     def table_ies(self, file_table, total_num_files):
-        sortWin = SortWindow(file_table, total_num_files)
+        curname = str(self.nameTxt.text()).strip()
+        curdir = str(self.testbankDirTxt.text())
+        start_range = self.startRangeSpinBox.value()
+        end_range = self.endRangeSpinBox.value()
+        
+        sortWin = SortWindow(curname, curdir, file_table, total_num_files, start_range, end_range)
         self.close()
         sortWin.exec_()
     
