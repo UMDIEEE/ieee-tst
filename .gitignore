@@ -58,4 +58,4 @@ docs/_build/
 target/
 
 # Generated GUI files
-itst/gui/
+itst/gui/*GUI*
