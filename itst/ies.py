@@ -38,6 +38,31 @@ format_exts = {
 
 supported_mime_types = format_exts.keys()
 
+# Parse file name into parts
+def parseFileName(file_name):
+    #file_re = re.compile(r"^([A-Z]{4}\d{3}[A-Z]*)_(\d{4})_([SUFW])_([A-Za-z-]+)_(.*)\.(?:(?i)pdf|doc|docx|ppt|pptx|jpg|jpeg|zip|rar|gif)$")
+
+    ext_regex_part = "|".join([x[1:] if type(x) == str else "|".join([y[1:] for y in x]) for x in format_exts.values()])
+    final_file_re_txt = r"^([A-Z]{4}\d{3}[A-Z]*)_(\d{4})_([SUFW])_([A-Za-z-]+)_(.*)\.(?:(?i)" + ext_regex_part + r")$"
+    file_part_re_txt = r"^([A-Z]{4}\d{3}[A-Z]*)_(\d{4})_([SUFW])_([A-Za-z-]+)_(.*)"
+
+    file_re = re.compile(final_file_re_txt)
+    file_part_re = re.compile(file_part_re_txt)
+        
+    m = file_part_re.match(file_name)
+    
+    exam_info = {}
+    
+    if m:
+        exam_info["class"] = m.group(1)
+        exam_info["year"] = int(m.group(2))
+        exam_info["season"] = m.group(3)
+        exam_info["professor"] = m.group(4)
+        exam_info["exam"] = m.group(5)
+        return exam_info
+    else:
+        return None
+
 # Validation phase - ensure tests follow the format:
 # CLASS_YEAR_SEMLETTER_TEACHER_EXAMINFO.pdf
 #   CLASS should follow format: XXXX###[X] (XXXX = letters in all caps, ### = numbers, [X] = optional letter)
