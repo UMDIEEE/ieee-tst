@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>539</width>
-    <height>636</height>
+    <width>556</width>
+    <height>677</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -375,6 +375,31 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>testSlider</tabstop>
+  <tabstop>firstTestBtn</tabstop>
+  <tabstop>prevTestBtn</tabstop>
+  <tabstop>openTestBtn</tabstop>
+  <tabstop>nextTestBtn</tabstop>
+  <tabstop>lastTestBtn</tabstop>
+  <tabstop>autofillBtn</tabstop>
+  <tabstop>revertBtn</tabstop>
+  <tabstop>saveBtn</tabstop>
+  <tabstop>validTestAllGoodRadio</tabstop>
+  <tabstop>validTestWrongTestRadio</tabstop>
+  <tabstop>validTestJunkRadio</tabstop>
+  <tabstop>classTxt</tabstop>
+  <tabstop>semesterCBox</tabstop>
+  <tabstop>yearSpinBox</tabstop>
+  <tabstop>profLastNameTxt</tabstop>
+  <tabstop>profFirstNameTxt</tabstop>
+  <tabstop>testTypeQuizRadio</tabstop>
+  <tabstop>testTypeMidtermRadio</tabstop>
+  <tabstop>testTypeFinalRadio</tabstop>
+  <tabstop>testNumSpinBox</tabstop>
+  <tabstop>addlExamInfoTxt</tabstop>
+  <tabstop>fileNotesTxt</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
  <buttongroups>
