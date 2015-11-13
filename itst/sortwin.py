@@ -1,6 +1,9 @@
 from PyQt4 import QtGui, QtCore
 
 from gui import SortingGUI
+from ies import parseFileName
+
+import re
 
 class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
     def __init__(self, confname, srcdir, file_table, num_files, start_range, end_range, state = None):
@@ -65,6 +68,104 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         
         # D:\IEEE Renamed Exams\Mini Testing Valid Exams
     
+    def autoFillCurrentExam(self):
+        self.current_exam = self.testSlider.value()
+        exam_data = self.state["exam_data"][self.current_exam]
+        fndata = parseFileName(exam_data["file_name"])
+        
+        miniAutoFillLog  = "Autofill executed! We tried our best to fill things in, but no guarantees that everything is correct!\n\n"
+        miniAutoFillLog += "As always, this is NOT a replacement for actually looking at exams and filling out the info! This is just for your convenience.\n\n"
+        miniAutoFillLog += "Please delete this message after reading it! This is meant for YOUR file notes! Messages below indicate what we filled and didn't fill:\n\n"
+        
+        if not fndata:
+            #TODO: error here
+            pass
+        
+        # Class, year, season, professor, exam
+        self.classTxt.setText(fndata["class"])
+        self.yearSpinBox.setValue(fndata["year"])
+        
+        miniAutoFillLog += "Class detected: %s\n" % (fndata["class"])
+        miniAutoFillLog += "Year detected: %s\n" % (fndata["year"])
+        
+        # Season: Spring sUmmer Fall Winter
+        
+        comboIndex = -1
+        if fndata["season"] == "S":
+            comboIndex = self.semesterCBox.findText("Spring", QtCore.Qt.MatchFixedString)
+            miniAutoFillLog += "Semester detected: Spring\n"
+        elif fndata["season"] == "U":
+            comboIndex = self.semesterCBox.findText("Summer", QtCore.Qt.MatchFixedString)
+            miniAutoFillLog += "Semester detected: Summer\n"
+        elif fndata["season"] == "F":
+            comboIndex = self.semesterCBox.findText("Fall", QtCore.Qt.MatchFixedString)
+            miniAutoFillLog += "Semester detected: Fall\n"
+        elif fndata["season"] == "W":
+            comboIndex = self.semesterCBox.findText("Winter", QtCore.Qt.MatchFixedString)
+            miniAutoFillLog += "Semester detected: Winter\n"
+        else:
+            #TODO: error here
+            pass
+        
+        if comboIndex < 0:
+            #TODO: error here
+            pass
+        
+        self.semesterCBox.setCurrentIndex(comboIndex)
+        
+        # Professor
+        name_re_str = r'([A-Z][a-z-]*)([]A-Z][a-z-]*)*'
+        name_re = re.compile(name_re_str)
+        
+        name_m = name_re.match(fndata["professor"])
+        
+        if name_m:
+            if name_m.group(2):
+                # We have first and last name!
+                self.profFirstNameTxt.setText(name_m.group(1))
+                self.profLastNameTxt.setText(name_m.group(2))
+                miniAutoFillLog += "Professor detected: %s, %s\n" % (name_m.group(2), name_m.group(1))
+            else:
+                # Only last name
+                self.profLastNameTxt.setText(name_m.group(1))
+                miniAutoFillLog += "Professor detected: %s (last name only)\n" % (name_m.group(1))
+        else:
+            # Error TODO
+            pass
+        
+        # Finally, exam info...
+        # Order is important here! Highest to lowest priority...
+        if "final" in fndata["exam"].lower():
+            self.testTypeFinalRadio.setChecked(True)
+            miniAutoFillLog += "Type of test detected: Final\n"
+        elif "quiz" in fndata["exam"].lower():
+            self.testTypeQuizRadio.setChecked(True)
+            miniAutoFillLog += "Type of test detected: Quiz\n"
+        elif "midterm" in fndata["exam"].lower():
+            self.testTypeMidtermRadio.setChecked(True)
+            miniAutoFillLog += "Type of test detected: Midterm\n"
+        else:
+            # Don't check anything
+            miniAutoFillLog += "Couldn't figure out type of test, skipped selecting anything.\n"
+            pass
+        
+        # Extract exam number, if possible
+        exam_num_m = re.findall('\d+', fndata["exam"])
+        exam_num_roman_m = re.findall('[Ii]+', fndata["exam"])
+        
+        if len(exam_num_m) == 1:
+            self.testNumSpinBox.setValue(int(exam_num_m[0]))
+            miniAutoFillLog += "Test number: %d\n" % (int(exam_num_m[0]))
+        elif len(exam_num_roman_m) == 1:
+            self.testNumSpinBox.setValue(len(exam_num_m[0]))
+            miniAutoFillLog += "Test number: %d\n" % (len(exam_num_m[0]))
+        else:
+            # Don't do anything
+            miniAutoFillLog += "Couldn't figure out test number, skipped filling out anything.\n"
+            pass
+        
+        self.fileNotesTxt.setPlainText(miniAutoFillLog)
+        
     def showExamTooltip(self):
         tooltipPos = self.testSlider.mapToGlobal(self.testSlider.pos())
         self.current_exam = self.testSlider.value()
