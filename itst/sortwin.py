@@ -49,6 +49,8 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             self.current_exam = self.state["user_state"]["current_exam"]
             self.old_exam = self.current_exam
         
+        self.formDirty = False
+        
         self.saveBtn.setEnabled(False)
         self.revertBtn.setEnabled(False)
         
@@ -63,11 +65,71 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.firstTestBtn.clicked.connect(self.firstExam)
         self.lastTestBtn.clicked.connect(self.lastExam)
         
+        self.autofillBtn.clicked.connect(self.autoFillCurrentExam)
+        
+        # Set dirty states
+        
+        # Valid text radio button group
+        self.validTestAllGoodRadio.toggled.connect(self.changeFormHandler)
+        self.validTestWrongTestRadio.toggled.connect(self.changeFormHandler)
+        self.validTestJunkRadio.toggled.connect(self.changeFormHandler)
+        
+        # Class textbox
+        self.classTxt.textChanged.connect(self.changeFormHandler)
+        
+        # Semester combobox
+        self.semesterCBox.currentIndexChanged.connect(self.changeFormHandler)
+        
+        # Year spinbox
+        self.yearSpinBox.valueChanged.connect(self.changeFormHandler)
+        
+        # Professor last name, first name textboxes
+        self.profLastNameTxt.textChanged.connect(self.changeFormHandler)
+        self.profFirstNameTxt.textChanged.connect(self.changeFormHandler)
+        
+        # Exam type - Quiz/Midterm/Final radio button group
+        self.testTypeQuizRadio.toggled.connect(self.changeFormHandler)
+        self.testTypeMidtermRadio.toggled.connect(self.changeFormHandler)
+        self.testTypeFinalRadio.toggled.connect(self.changeFormHandler)
+        
+        # Test number spinbox
+        self.testNumSpinBox.valueChanged.connect(self.changeFormHandler)
+        
+        # Addl exam info + file notes
+        self.addlExamInfoTxt.textChanged.connect(self.changeFormHandler)
+        self.fileNotesTxt.textChanged.connect(self.changeFormHandler)
+        
+        ###########
+        
         self.changeExam()
         
         #self.goBtn.clicked.connect(self.go)
         
         # D:\IEEE Renamed Exams\Mini Testing Valid Exams
+    
+    def changeFormHandler(self, arg = None):
+        print self.sender().__class__.__name__ , "Printing()", self.__class__.__name__
+        print arg
+        
+        # Determine type of widget
+        if self.sender().__class__ is QtGui.QLineEdit:
+            print "qlineedit"
+            
+            # Which widget?
+            if self.sender() is self.classTxt:
+                print "classTxt"
+            if self.sender() is self.profLastNameTxt:
+                print "profLastNameTxt"
+        elif self.sender().__class__ is QtGui.QComboBox:
+            print "QComboBox"
+        elif self.sender().__class__ is QtGui.QRadioButton:
+            print "QRadioButton"
+        elif self.sender().__class__ is QtGui.QSpinBox:
+            print "QSpinBox"
+        elif self.sender().__class__ is QtGui.QPlainTextEdit:
+            print "QPlainTextEdit"
+        else:
+            print "UNKNOWN WIDGET TYPE - BUG!"
     
     def autoFillCurrentExam(self):
         self.current_exam = self.testSlider.value()
