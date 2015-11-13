@@ -25,7 +25,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.state = state
         
         if state == None:
-            self.current_exam = 1
+            self.current_exam = self.start_range
             self.old_exam = self.current_exam
             self.state = {
                             "user_state" : {
@@ -42,7 +42,8 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             f_index = 1
             for f_entry in file_table:
                 # (filename, mime type)
-                self.state["exam_data"][f_index] = { "file_name" : f_entry[0], "filled": False, "data" : {} }
+                if (f_index >= self.start_range) and (f_index <= self.end_range):
+                    self.state["exam_data"][f_index] = { "file_name" : f_entry[0], "filled": False, "data" : {} }
                 f_index += 1
         else:
             self.current_exam = self.state["user_state"]["current_exam"]
