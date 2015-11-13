@@ -170,17 +170,26 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
     def showExamTooltip(self):
         tooltipPos = self.testSlider.mapToGlobal(self.testSlider.pos())
         self.current_exam = self.testSlider.value()
+        exam_data = self.state["exam_data"][self.current_exam]
+        actual_exam_data = exam_data["data"]
+        
+        fetch_actual_exam_data = lambda x, d=None: (actual_exam_data[x] if x in actual_exam_data else (d if d != None else "N/A"))
         
         print "showExamTooltip: %i / %i" % (self.current_exam, self.num_files)
         
         tooltipText  = "<b>Exam %i / %i</b><br />" % (self.current_exam, self.num_files)
-        tooltipText += "%s<br />" % ("<span style='color: #00ff00'>Test is Valid</span>")
-        tooltipText += "<b>Class:</b> ENEE123<br />"
-        tooltipText += "<b>When:</b> Fall 2015<br />"
-        tooltipText += "<b>Professor:</b> Bob Bob<br />"
-        tooltipText += "<b>Exam:</b> Quiz 2<br />"
-        tooltipText += "<b>Additional exam info:</b><br />Circuits<br />"
-        tooltipText += "<b>File notes:</b><br />Notes"
+        tooltipText += "<b>File:</b> %s<br />" % (exam_data["file_name"])
+        
+        if exam_data["filled"]:
+            tooltipText += "%s<br />" % ("<span style='color: #00ff00'>Test is Valid</span>")
+            tooltipText += "<b>Class:</b> %s<br />" % (fetch_actual_exam_data("class"))
+            tooltipText += "<b>When:</b> %s %s<br />" % (fetch_actual_exam_data("season"), fetch_actual_exam_data("year", ""))
+            tooltipText += "<b>Professor:</b> %s<br />" % (actual_exam_data["professor"] if "professor" in actual_exam_data else "N/A")
+            tooltipText += "<b>Exam:</b> %s %s<br />" % (fetch_actual_exam_data("exam_type"), str(fetch_actual_exam_data("exam_num", "")))
+            tooltipText += "<b>Additional exam info:</b><br />%s<br />" % (fetch_actual_exam_data("addl_exam_info"))
+            tooltipText += "<b>File notes:</b><br />%s" % (fetch_actual_exam_data("notes"))
+        else:
+            tooltipText += "<b>(Test not entered yet)</b>"
         
         QtGui.QToolTip.showText(tooltipPos, tooltipText, None)
     
