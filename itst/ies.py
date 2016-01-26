@@ -90,10 +90,11 @@ def scanDir(srcdir, progCallback, errCallback):
     print("Loading magic mime file...")
     
     if sys.platform == "win32":
+        magic_file_path = os.path.join(getScriptPath(), "magic-db", "magic.mgc")
         try:
-            fh = open("magic-db/magic.mgc", "r")
+            fh = open(magic_file_path, "r")
             fh.close()
-            mag = magic.Magic(magic_file="magic-db/magic.mgc", mime=True)
+            mag = magic.Magic(magic_file=magic_file_path, mime=True)
         except IOError:
             print("ERROR: No magic file database found! (magic-db/magic.mgc)")
             errCallback("No magic file database found!\nMake sure the magic database (magic-db/magic.mgc) exists.")
