@@ -1,9 +1,19 @@
 from PyQt4 import QtGui, QtCore
 
 from gui import SortingGUI
-from ies import parseFileName
+from ies import parseFileName, getScriptPath
 
 import re
+import os
+import sys
+import subprocess
+import traceback
+
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
     def __init__(self, confname, srcdir, file_table, num_files, start_range, end_range, state = None):
@@ -26,7 +36,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         
         if state == None:
             self.current_exam = self.start_range
-            self.old_exam = self.current_exam
+            #self.old_exam = self.current_exam
             self.state = {
                             "user_state" : {
                                                 "current_exam" : 1,
@@ -47,12 +57,21 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                 f_index += 1
         else:
             self.current_exam = self.state["user_state"]["current_exam"]
-            self.old_exam = self.current_exam
+            #self.old_exam = self.current_exam
+        
+        # This is an invalid value, but it will get changed once
+        # self.changeExam() is called!
+        self.old_exam = -1
         
         self.formDirty = False
+        self.examChanging = False
         
         self.saveBtn.setEnabled(False)
         self.revertBtn.setEnabled(False)
+        
+        # Save / revert connect
+        self.saveBtn.clicked.connect(self.saveExamData)
+        self.revertBtn.clicked.connect(self.revertExamData)
         
         self.testSlider.setRange(start_range, end_range)
         
@@ -62,6 +81,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         
         self.prevTestBtn.clicked.connect(self.decreaseExam)
         self.nextTestBtn.clicked.connect(self.increaseExam)
+        self.openTestBtn.clicked.connect(self.openExam)
         self.firstTestBtn.clicked.connect(self.firstExam)
         self.lastTestBtn.clicked.connect(self.lastExam)
         
@@ -99,6 +119,13 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.addlExamInfoTxt.textChanged.connect(self.changeFormHandler)
         self.fileNotesTxt.textChanged.connect(self.changeFormHandler)
         
+        # Open timer
+        self.openCountdown = 10
+        
+        self.openTimer = QtCore.QTimer()
+        self.openTimer.setInterval(1000)
+        self.openTimer.timeout.connect(self.openExamCountdown)
+        
         ###########
         
         self.changeExam()
@@ -107,9 +134,322 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         
         # D:\IEEE Renamed Exams\Mini Testing Valid Exams
     
+    def openExamCountdown(self):
+        if self.openCountdown >= 0:
+            self.openTestBtn.setEnabled(False)
+            if self.openCountdown > 0:
+                self.openTestBtn.setText("Opening... (%is)" % self.openCountdown)
+            else:
+                self.openTestBtn.setText("Opened! (%is)" % self.openCountdown)
+            self.openCountdown -= 1
+        else:
+            self.openTimer.stop()
+            self.openCountdown = 10
+            self.openTestBtn.setText("Open")
+            self.openTestBtn.setEnabled(True)
+    
+    def openExam(self):
+        # Disable button!
+        self.openTestBtn.setEnabled(False)
+        self.openTestBtn.setText("Opening... (%is)" % self.openCountdown)
+        
+        # Start countdown...
+        self.openTimer.start()
+        
+        # Figure out path
+        exam_fn = self.state["exam_data"][self.current_exam]["file_name"]
+        exam_full_path = os.path.join(self.state["user_state"]["srcdir"], exam_fn)
+        
+        if sys.platform.startswith('darwin'):
+            subprocess.call(('open', exam_full_path))
+        elif os.name == 'nt':
+            os.startfile(exam_full_path)
+        elif os.name == 'posix':
+            subprocess.call(('xdg-open', exam_full_path))
+    
+    def closeEvent(self, event):
+        if self.confirmExamState(task = "exiting"):
+            self.writeExamData(check_exist = True)
+            event.accept()
+        else:
+            event.ignore()
+    
+    # If check_exist is True, only write data if the data exists at all.
+    def writeExamData(self, check_exist = False):
+        exam_data_file = os.path.join(getScriptPath(), "exam_data.yml")
+        if check_exist:
+            file_exist = False
+            try:
+                test_fh = open(exam_data_file)
+                test_fh.close()
+                file_exist = True
+            except:
+                pass
+            
+            if not file_exist:
+                return
+        
+        try:
+            print "Saving to: %s" % (exam_data_file)
+            config_fh = open(exam_data_file, "w")
+            config_fh.write(yaml.dump(self.state, Dumper=Dumper))
+            config_fh.close()
+        except IOError:
+            msgbox = QtGui.QMessageBox(QtGui.QMessageBox.Critical, "Error",
+                "Could not save exam data! Error details:\n\n" + traceback.format_exc(),
+                QtGui.QMessageBox.Ok, self)
+    
+    def saveExamData(self):
+        # Save data from form!
+        exam_data = self.state["exam_data"][self.current_exam]
+        
+        # First, set filled flag
+        exam_data["filled"] = True
+        
+        # Set class data
+        if self.classTxt.text(): exam_data["data"]["class"] = str(self.classTxt.text())
+        else: exam_data["data"].pop("class", None)
+        
+        # Set profLastName
+        if self.profLastNameTxt.text(): exam_data["data"]["profLastName"] = str(self.profLastNameTxt.text())
+        else: exam_data["data"].pop("profLastName", None)
+        
+        # Set profFirstName
+        if self.profFirstNameTxt.text(): exam_data["data"]["profFirstName"] = str(self.profFirstNameTxt.text())
+        else: exam_data["data"].pop("profFirstName", None)
+        
+        # Set info
+        if self.addlExamInfoTxt.text(): exam_data["data"]["info"] = str(self.addlExamInfoTxt.text())
+        else: exam_data["data"].pop("info", None)
+        
+        # Set semester
+        if self.semesterCBox.currentText(): exam_data["data"]["semester"] = str(self.semesterCBox.currentText())
+        else: exam_data["data"].pop("semester", None)
+        
+        # Set status
+        if self.validTestAllGoodRadio.isChecked(): exam_data["data"]["status"] = "good"
+        elif self.validTestWrongTestRadio.isChecked(): exam_data["data"]["status"] = "wrongtest"
+        elif self.validTestJunkRadio.isChecked(): exam_data["data"]["status"] = "junk"
+        else: exam_data["data"].pop("status", None)
+        
+        # Set type
+        if self.testTypeQuizRadio.isChecked(): exam_data["data"]["type"] = "Quiz"
+        elif self.testTypeMidtermRadio.isChecked(): exam_data["data"]["type"] = "Midterm"
+        elif self.testTypeFinalRadio.isChecked(): exam_data["data"]["type"] = "Final"
+        else: exam_data["data"].pop("type", None)
+        
+        # Set year
+        exam_data["data"]["year"] = self.yearSpinBox.value()
+        
+        # Set testNum
+        exam_data["data"]["testNum"] = self.testNumSpinBox.value()
+        
+        # Set fileNotes
+        if self.fileNotesTxt.toPlainText(): exam_data["data"]["fileNotes"] = str(self.fileNotesTxt.toPlainText())
+        else: exam_data["data"].pop("fileNotes", None)
+        
+        # Actually save file!
+        self.writeExamData()
+        
+        # Disable revert/save, validate everything
+        self.revertBtn.setEnabled(False)
+        self.saveBtn.setEnabled(False)
+        self.validateAllWidgets()
+        
+        # Unset dirty bit
+        self.unsetDirtyBit()
+    
+    def populateExamData(self):
+        exam_data = self.state["exam_data"][self.current_exam]
+        
+        # Clear dirty bit
+        self.unsetDirtyBit()
+        
+        # We set this since we're changing stuff
+        self.examChanging = True
+        
+        # Clear everything!
+        self.clearAllWidgets()
+        
+        # Set label
+        self.currentTestLbl.setText("%s (%i/%i)" % 
+            (exam_data["file_name"], self.current_exam, self.num_files))
+        
+        # Set window title
+        self.setWindowTitle("%s (%i/%i) - IEEE Testbank Tool" % 
+            (exam_data["file_name"], self.current_exam, self.num_files))
+        
+        # Actually populate data!
+        if exam_data["filled"]:
+            if "class" in exam_data["data"]:
+                self.classTxt.setText(exam_data["data"]["class"])
+            if "profLastName" in exam_data["data"]:
+                self.profLastNameTxt.setText(exam_data["data"]["profLastName"])
+            if "profFirstName" in exam_data["data"]:
+                self.profFirstNameTxt.setText(exam_data["data"]["profFirstName"])
+            if "info" in exam_data["data"]:
+                self.addlExamInfoTxt.setText(exam_data["data"]["info"])
+            if "semester" in exam_data["data"]:
+                comboIndex = self.semesterCBox.findText(exam_data["data"]["semester"], QtCore.Qt.MatchFixedString)
+                # Even if search fails, comboIndex will be set to -1, which works - nothing is set at all!
+                self.semesterCBox.setCurrentIndex(comboIndex)
+            if "status" in exam_data["data"]:
+                if exam_data["data"]["status"] == "good":
+                    self.validTestAllGoodRadio.setChecked(True)
+                elif exam_data["data"]["status"] == "wrongtest":
+                    self.validTestWrongTestRadio.setChecked(True)
+                elif exam_data["data"]["status"] == "junk":
+                    self.validTestJunkRadio.setChecked(True)
+                else:
+                    print("Warning: Invalid exam status detected! (Got: %s)" % exam_data["data"]["status"])
+            if "type" in exam_data["data"]:
+                if exam_data["data"]["type"] == "Quiz":
+                    self.testTypeQuizRadio.setChecked(True)
+                elif exam_data["data"]["type"] == "Midterm":
+                    self.testTypeMidtermRadio.setChecked(True)
+                elif exam_data["data"]["type"] == "Final":
+                    self.testTypeFinalRadio.setChecked(True)
+                else:
+                    print("Warning: Invalid exam type detected! (Got: %s)" % exam_data["data"]["status"])
+            if "year" in exam_data["data"]:
+                self.yearSpinBox.setValue(exam_data["data"]["year"])
+            if "testNum" in exam_data["data"]:
+                self.testNumSpinBox.setValue(exam_data["data"]["testNum"])
+            if "fileNotes" in exam_data["data"]:
+                self.fileNotesTxt.setPlainText(exam_data["data"]["fileNotes"])
+        
+        # Revert state to regular
+        self.examChanging = False
+    
+    def revertExamData(self):
+        confirm = QtGui.QMessageBox.question(self, "Revert everything?",
+            "Are you sure you want to revert everything to the currently stored data? All unsaved fields will be erased.",
+            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        
+        if confirm == QtGui.QMessageBox.Yes:
+            self.populateExamData()
+            self.revertBtn.setEnabled(False)
+            self.saveBtn.setEnabled(False)
+    
+    def clearAllWidgets(self):
+        # Test status radio
+        # Exclusive must be turned off, or otherwise setting one to
+        # False will trigger another
+        self.testValidButtonGroup.setExclusive(False)
+        
+        self.validTestAllGoodRadio.setChecked(False)
+        self.validTestWrongTestRadio.setChecked(False)
+        self.validTestJunkRadio.setChecked(False)
+        
+        # Re-enable exclusive
+        self.testValidButtonGroup.setExclusive(True)
+        
+        # Class textbox
+        self.classTxt.setText("")
+        
+        # Semester combobox
+        self.semesterCBox.setCurrentIndex(-1)
+        
+        # Year spinbox
+        self.yearSpinBox.setValue(2016)
+        
+        # Professor last name, first name textboxes
+        self.profLastNameTxt.setText("")
+        self.profFirstNameTxt.setText("")
+        
+        # Exam type - Quiz/Midterm/Final radio button group
+        self.testTypeBtnGroup.setExclusive(False)
+        
+        self.testTypeQuizRadio.setChecked(False)
+        self.testTypeMidtermRadio.setChecked(False)
+        self.testTypeFinalRadio.setChecked(False)
+        
+        self.testTypeBtnGroup.setExclusive(True)
+        
+        # Test number spinbox
+        self.testNumSpinBox.setValue(0)
+        
+        # Addl exam info + file notes
+        self.addlExamInfoTxt.setText("")
+        self.fileNotesTxt.setPlainText("")
+        
+        # Validate everything
+        self.validateAllWidgets()
+    
+    def handleUnknownWidget(self, widget):
+        print "UNKNOWN! sender is: %s" % str(self.sender().__class__.__name__)
+        print "         sender object name is: %s" % str(self.sender().objectName())
+    
+    def setDirtyBit(self, widget = None):
+        print "Dirty bit set! (Called by: %s)" % sys._getframe().f_back.f_code.co_name
+        self.formDirty = True
+        
+        self.revertBtn.setEnabled(True)
+        self.saveBtn.setEnabled(True)
+        
+        if widget:
+            self.invalidateWidget(widget)
+    
+    def unsetDirtyBit(self, widget = None):
+        print "Dirty bit reset! (Called by: %s)" % sys._getframe().f_back.f_code.co_name
+        self.formDirty = False
+        
+        self.revertBtn.setEnabled(False)
+        self.saveBtn.setEnabled(False)
+        
+        if widget:
+            self.invalidateWidget(widget)
+    
+    def invalidateWidget(self, widget):
+        widget.setStyleSheet("background-color: #660000;")
+    
+    def validateWidget(self, widget):
+        widget.setStyleSheet("")
+    
+    def validateAllWidgets(self):
+        self.validateWidget(self.validTestAllGoodRadio)
+        self.validateWidget(self.validTestWrongTestRadio)
+        self.validateWidget(self.validTestJunkRadio)
+        
+        # Class textbox
+        self.validateWidget(self.classTxt)
+        
+        # Semester combobox
+        self.validateWidget(self.semesterCBox)
+        
+        # Year spinbox
+        self.validateWidget(self.yearSpinBox)
+        
+        # Professor last name, first name textboxes
+        self.validateWidget(self.profLastNameTxt)
+        self.validateWidget(self.profFirstNameTxt)
+        
+        # Exam type - Quiz/Midterm/Final radio button group
+        self.validateWidget(self.testTypeQuizRadio)
+        self.validateWidget(self.testTypeMidtermRadio)
+        self.validateWidget(self.testTypeFinalRadio)
+        
+        # Test number spinbox
+        self.validateWidget(self.testNumSpinBox)
+        
+        # Addl exam info + file notes
+        self.validateWidget(self.addlExamInfoTxt)
+        self.validateWidget(self.fileNotesTxt)
+    
     def changeFormHandler(self, arg = None):
+        exam_data = self.state["exam_data"][self.current_exam]
+        
+        if self.examChanging:
+            print "No dirty bit will be set."
+            return
+        
         print self.sender().__class__.__name__ , "Printing()", self.__class__.__name__
         print arg
+        
+        self.validateWidget(self.sender())
+        
+        # We could check for empty form, but this requires more validation
+        # then that!
         
         # Determine type of widget
         if self.sender().__class__ is QtGui.QLineEdit:
@@ -117,21 +457,133 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             
             # Which widget?
             if self.sender() is self.classTxt:
+                # If data is defined, and if the data matches, don't do anything. Otherwise, invalidate!
+                if not (("class" in exam_data["data"]) and (exam_data["data"]["class"] == self.classTxt.text())):
+                    print "invalidated class"
+                    self.setDirtyBit(self.sender())
+                
                 print "classTxt"
-            if self.sender() is self.profLastNameTxt:
+            elif self.sender() is self.profLastNameTxt:
+                if not (("profLastName" in exam_data["data"]) and (exam_data["data"]["profLastName"] == self.profLastNameTxt.text())):
+                    print "invalidated profLastName"
+                    self.setDirtyBit(self.sender())
+                
                 print "profLastNameTxt"
+            elif self.sender() is self.profFirstNameTxt:
+                if not (("profFirstName" in exam_data["data"]) and (exam_data["data"]["profFirstName"] == self.profFirstNameTxt.text())):
+                    print "invalidated profFirstName"
+                    self.setDirtyBit(self.sender())
+                
+                print "profFirstNameTxt"
+            elif self.sender() is self.addlExamInfoTxt:
+                if not (("info" in exam_data["data"]) and (exam_data["data"]["info"] == self.addlExamInfoTxt.text())):
+                    print "invalidated info / addlExamInfoTxt"
+                    self.setDirtyBit(self.sender())
+                
+                print "addlExamInfoTxt"
+            else:
+                self.handleUnknownWidget(self.sender())
+            
         elif self.sender().__class__ is QtGui.QComboBox:
             print "QComboBox"
+            
+            # Which widget?
+            if self.sender() is self.semesterCBox:
+                if not (("semester" in exam_data["data"]) and (exam_data["data"]["semester"] == self.semesterCBox.currentText())):
+                    print "invalidated semester"
+                    self.setDirtyBit(self.sender())
+                
+                print "semesterCBox"
+            else:
+                self.handleUnknownWidget(self.sender())
         elif self.sender().__class__ is QtGui.QRadioButton:
             print "QRadioButton"
+            
+            # If the arg is False, validate the widget.
+            if not arg:
+                self.validateWidget(self.sender())
+            else:
+                # Which widget?
+                if self.sender() is self.validTestAllGoodRadio:
+                    if not (("status" in exam_data["data"]) and (exam_data["data"]["status"] == "good")):
+                        print "invalidated status / validTestAllGoodRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "validTestAllGoodRadio"
+                elif self.sender() is self.validTestWrongTestRadio:
+                    if not (("status" in exam_data["data"]) and (exam_data["data"]["status"] == "wrongtest")):
+                        print "invalidated status / validTestWrongTestRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "validTestWrongTestRadio"
+                elif self.sender() is self.validTestJunkRadio:
+                    if not (("status" in exam_data["data"]) and (exam_data["data"]["status"] == "junk")):
+                        print "invalidated status / validTestJunkRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "validTestJunkRadio"
+                elif self.sender() is self.testTypeQuizRadio:
+                    if not (("type" in exam_data["data"]) and (exam_data["data"]["type"] == "Quiz")):
+                        print "invalidated type / testTypeQuizRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testTypeQuizRadio"
+                elif self.sender() is self.testTypeMidtermRadio:
+                    if not (("type" in exam_data["data"]) and (exam_data["data"]["type"] == "Midterm")):
+                        print "invalidated type / testTypeMidtermRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testTypeMidtermRadio"
+                elif self.sender() is self.testTypeFinalRadio:
+                    if not (("type" in exam_data["data"]) and (exam_data["data"]["type"] == "Final")):
+                        print "invalidated type / testTypeFinalRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testTypeFinalRadio"
+                else:
+                    self.handleUnknownWidget(self.sender())
+            
         elif self.sender().__class__ is QtGui.QSpinBox:
             print "QSpinBox"
+            
+            # Which widget?
+            if self.sender() is self.yearSpinBox:
+                if not (("year" in exam_data["data"]) and (exam_data["data"]["year"] == self.yearSpinBox.value())):
+                    print "invalidated year"
+                    self.setDirtyBit(self.sender())
+                
+                print "yearSpinBox"
+            elif self.sender() is self.testNumSpinBox:
+                if not (("testNum" in exam_data["data"]) and (exam_data["data"]["testNum"] == self.testNumSpinBox.value())):
+                    print "invalidated testNum"
+                    self.setDirtyBit(self.sender())
+                
+                print "testNumSpinBox"
+            else:
+                self.handleUnknownWidget(self.sender())
         elif self.sender().__class__ is QtGui.QPlainTextEdit:
             print "QPlainTextEdit"
+            
+            if self.sender() is self.fileNotesTxt:
+                if not (("fileNotes" in exam_data["data"]) and (exam_data["data"]["fileNotes"] == self.fileNotesTxt.toPlainText())):
+                    print "invalidated fileNotes"
+                    self.setDirtyBit(self.sender())
+                
+                print "fileNotesTxt"
+            else:
+                self.handleUnknownWidget(self.sender())
         else:
             print "UNKNOWN WIDGET TYPE - BUG!"
+            self.handleUnknownWidget(self.sender())
     
     def autoFillCurrentExam(self):
+        confirm = QtGui.QMessageBox.question(self, "Perform autofill?",
+            "Autofill will try to guess the fields based on the file name. Doing autofill will overwrite any fields that have not been saved. Are you sure you want to autofill?",
+            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        
+        if not (confirm == QtGui.QMessageBox.Yes):
+            return
+        
         self.current_exam = self.testSlider.value()
         exam_data = self.state["exam_data"][self.current_exam]
         fndata = parseFileName(exam_data["file_name"])
@@ -144,26 +596,29 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             #TODO: error here
             pass
         
-        # Class, year, season, professor, exam
+        # Class, year, semester, professor, exam
         self.classTxt.setText(fndata["class"])
         self.yearSpinBox.setValue(fndata["year"])
+        
+        self.setDirtyBit(self.classTxt)
+        self.setDirtyBit(self.yearSpinBox)
         
         miniAutoFillLog += "Class detected: %s\n" % (fndata["class"])
         miniAutoFillLog += "Year detected: %s\n" % (fndata["year"])
         
-        # Season: Spring sUmmer Fall Winter
+        # Semester/Season: Spring sUmmer Fall Winter
         
         comboIndex = -1
-        if fndata["season"] == "S":
+        if fndata["semester"] == "S":
             comboIndex = self.semesterCBox.findText("Spring", QtCore.Qt.MatchFixedString)
             miniAutoFillLog += "Semester detected: Spring\n"
-        elif fndata["season"] == "U":
+        elif fndata["semester"] == "U":
             comboIndex = self.semesterCBox.findText("Summer", QtCore.Qt.MatchFixedString)
             miniAutoFillLog += "Semester detected: Summer\n"
-        elif fndata["season"] == "F":
+        elif fndata["semester"] == "F":
             comboIndex = self.semesterCBox.findText("Fall", QtCore.Qt.MatchFixedString)
             miniAutoFillLog += "Semester detected: Fall\n"
-        elif fndata["season"] == "W":
+        elif fndata["semester"] == "W":
             comboIndex = self.semesterCBox.findText("Winter", QtCore.Qt.MatchFixedString)
             miniAutoFillLog += "Semester detected: Winter\n"
         else:
@@ -175,6 +630,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             pass
         
         self.semesterCBox.setCurrentIndex(comboIndex)
+        self.setDirtyBit(self.semesterCBox)
         
         # Professor
         name_re_str = r'([A-Z][a-z-]*)([]A-Z][a-z-]*)*'
@@ -187,10 +643,13 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                 # We have first and last name!
                 self.profFirstNameTxt.setText(name_m.group(1))
                 self.profLastNameTxt.setText(name_m.group(2))
+                self.setDirtyBit(self.profFirstNameTxt)
+                self.setDirtyBit(self.profLastNameTxt)
                 miniAutoFillLog += "Professor detected: %s, %s\n" % (name_m.group(2), name_m.group(1))
             else:
                 # Only last name
                 self.profLastNameTxt.setText(name_m.group(1))
+                self.setDirtyBit(self.profLastNameTxt)
                 miniAutoFillLog += "Professor detected: %s (last name only)\n" % (name_m.group(1))
         else:
             # Error TODO
@@ -200,17 +659,21 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         # Order is important here! Highest to lowest priority...
         if "final" in fndata["exam"].lower():
             self.testTypeFinalRadio.setChecked(True)
+            self.setDirtyBit(self.testTypeFinalRadio)
             miniAutoFillLog += "Type of test detected: Final\n"
         elif "quiz" in fndata["exam"].lower():
             self.testTypeQuizRadio.setChecked(True)
+            self.setDirtyBit(self.testTypeQuizRadio)
             miniAutoFillLog += "Type of test detected: Quiz\n"
         elif "midterm" in fndata["exam"].lower():
             self.testTypeMidtermRadio.setChecked(True)
+            self.setDirtyBit(self.testTypeMidtermRadio)
             miniAutoFillLog += "Type of test detected: Midterm\n"
         else:
             # Don't check anything
             miniAutoFillLog += "Couldn't figure out type of test, skipped selecting anything.\n"
-            pass
+            miniAutoFillLog += "Placing test suffix in additional exam info field.\n"
+            self.addlExamInfoTxt.setText(fndata["exam"])
         
         # Extract exam number, if possible
         exam_num_m = re.findall('\d+', fndata["exam"])
@@ -218,9 +681,11 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         
         if len(exam_num_m) == 1:
             self.testNumSpinBox.setValue(int(exam_num_m[0]))
+            self.setDirtyBit(self.testNumSpinBox)
             miniAutoFillLog += "Test number: %d\n" % (int(exam_num_m[0]))
         elif len(exam_num_roman_m) == 1:
             self.testNumSpinBox.setValue(len(exam_num_m[0]))
+            self.setDirtyBit(self.testNumSpinBox)
             miniAutoFillLog += "Test number: %d\n" % (len(exam_num_m[0]))
         else:
             # Don't do anything
@@ -228,7 +693,21 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             pass
         
         self.fileNotesTxt.setPlainText(miniAutoFillLog)
-        
+        self.setDirtyBit(self.fileNotesTxt)
+    
+    def convertStatus(self, actual_exam_data):
+        if "status" in actual_exam_data:
+            if actual_exam_data["status"] == "good":
+                return "<span style='color: #00ff00'><b>Test is Valid</b></span>"
+            elif actual_exam_data["status"] == "wrongtest":
+                return "<span style='color: #ffa500'><b>Wrong Test (Needs to be Renamed)</b></span>"
+            elif actual_exam_data["status"] == "junk":
+                return "<span style='color: #ff0000'><b>Junk (Not an Exam)</b></span>"
+            else:
+                return "<span style='color: #800080'><b>INVALID STATUS! (Bug or corrupt file?)</b></span>"
+        else:
+            return ""
+    
     def showExamTooltip(self):
         tooltipPos = self.testSlider.mapToGlobal(self.testSlider.pos())
         self.current_exam = self.testSlider.value()
@@ -243,17 +722,34 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         tooltipText += "<b>File:</b> %s<br />" % (exam_data["file_name"])
         
         if exam_data["filled"]:
-            tooltipText += "%s<br />" % ("<span style='color: #00ff00'>Test is Valid</span>")
+            tooltipText += "%s<br />" % (self.convertStatus(actual_exam_data))
             tooltipText += "<b>Class:</b> %s<br />" % (fetch_actual_exam_data("class"))
-            tooltipText += "<b>When:</b> %s %s<br />" % (fetch_actual_exam_data("season"), fetch_actual_exam_data("year", ""))
-            tooltipText += "<b>Professor:</b> %s<br />" % (actual_exam_data["professor"] if "professor" in actual_exam_data else "N/A")
-            tooltipText += "<b>Exam:</b> %s %s<br />" % (fetch_actual_exam_data("exam_type"), str(fetch_actual_exam_data("exam_num", "")))
-            tooltipText += "<b>Additional exam info:</b><br />%s<br />" % (fetch_actual_exam_data("addl_exam_info"))
-            tooltipText += "<b>File notes:</b><br />%s" % (fetch_actual_exam_data("notes"))
+            tooltipText += "<b>When:</b> %s %s<br />" % (fetch_actual_exam_data("semester"), fetch_actual_exam_data("year", ""))
+            tooltipText += "<b>Professor (last, first):</b><br />%s, %s<br />" % (fetch_actual_exam_data("profLastName", "<i>(No last name)</i>"), \
+                                                                             fetch_actual_exam_data("profFirstName", "<i>(No first name)</i>"))
+            tooltipText += "<b>Exam:</b> %s %s<br />" % (fetch_actual_exam_data("type"), str(fetch_actual_exam_data("testNum", "")))
+            tooltipText += "<b>Additional exam info:</b><br />%s<br />" % (fetch_actual_exam_data("info"))
+            tooltipText += "<b>File notes:</b><br />%s" % (fetch_actual_exam_data("fileNotes"))
         else:
             tooltipText += "<b>(Test not entered yet)</b>"
         
         QtGui.QToolTip.showText(tooltipPos, tooltipText, None)
+    
+    def confirmExamState(self, task = "switching exams"):
+        if self.formDirty:
+            confirm = QtGui.QMessageBox.question(self, "Save exam?",
+                "You have not saved the exam data yet. Do you want to save the exam data before %s? All unsaved fields will be erased." % task,
+                QtGui.QMessageBox.Save, QtGui.QMessageBox.Discard, QtGui.QMessageBox.Cancel)
+            
+            if confirm == QtGui.QMessageBox.Save:
+                self.saveExamData()
+                return True
+            elif confirm == QtGui.QMessageBox.Discard:
+                return True
+            else:
+                return False
+        else:
+            return True
     
     def firstExam(self):
         self.current_exam = self.start_range
@@ -276,24 +772,56 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             self.changeExam()
     
     def changeExam(self):
-        if self.current_exam == self.start_range:
-            self.prevTestBtn.setEnabled(False)
-            self.firstTestBtn.setEnabled(False)
+        print "changeExam called! (Called by: %s)" % sys._getframe().f_back.f_code.co_name
+        if self.old_exam == self.current_exam:
+            print "  -> Ignoring call, old_exam == current_exam"
+            return
+        
+        # Save current_exam, and restore it later.
+        current_exam = self.current_exam
+        self.current_exam = self.old_exam
+        
+        if self.confirmExamState():
+            # Change old exam to new one
+            self.current_exam = current_exam
+            self.old_exam = self.current_exam
+            
+            # Set examChanging to prevent dirty set
+            self.examChanging = True
+            
+            # Reset countdown, as necessary
+            self.openTimer.stop()
+            self.openCountdown = 10
+            self.openTestBtn.setText("Open")
+            self.openTestBtn.setEnabled(True)
+            
+            # Set directional buttons
+            if self.current_exam == self.start_range:
+                self.prevTestBtn.setEnabled(False)
+                self.firstTestBtn.setEnabled(False)
+            else:
+                self.prevTestBtn.setEnabled(True)
+                self.firstTestBtn.setEnabled(True)
+            
+            if self.current_exam == self.end_range:
+                self.nextTestBtn.setEnabled(False)
+                self.lastTestBtn.setEnabled(False)
+            else:
+                self.nextTestBtn.setEnabled(True)
+                self.lastTestBtn.setEnabled(True)
+            
+            self.testSlider.setValue(self.current_exam)
+            
+            self.populateExamData()
+            
+            # Set examChanging to allow dirty set
+            self.examChanging = False
         else:
-            self.prevTestBtn.setEnabled(True)
-            self.firstTestBtn.setEnabled(True)
+            self.current_exam = self.old_exam
+            self.testSlider.setValue(self.current_exam)
         
-        if self.current_exam == self.end_range:
-            self.nextTestBtn.setEnabled(False)
-            self.lastTestBtn.setEnabled(False)
-        else:
-            self.nextTestBtn.setEnabled(True)
-            self.lastTestBtn.setEnabled(True)
-        
-        self.testSlider.setValue(self.current_exam)
-        
-        self.currentTestLbl.setText("%s (%i/%i)" % 
-            (self.state["exam_data"][self.current_exam]["file_name"], self.current_exam, self.num_files))
+        # Set user state for saving later
+        self.state["user_state"]["current_exam"] = self.current_exam
     
     def updateCurrentExam(self, examIndex):
         self.current_exam = examIndex
@@ -304,4 +832,4 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             self.showExamTooltip()
         else:
             self.changeExam()
-        
+    

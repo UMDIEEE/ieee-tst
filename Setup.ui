@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>401</width>
-    <height>418</height>
+    <height>475</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -195,14 +195,8 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QLabel" name="prevSessionLbl">
-          <property name="font">
-           <font>
-            <weight>75</weight>
-            <bold>true</bold>
-           </font>
-          </property>
           <property name="text">
-           <string>No previous session detected.</string>
+           <string>&lt;b&gt;No previous session detected.&lt;/b&gt;</string>
           </property>
          </widget>
         </item>

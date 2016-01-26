@@ -28,7 +28,7 @@ format_exts = {
                 "image/tiff" : [ ".tif", ".tiff" ],
                 
                 # Archive files
-                "application/zip" : ".zip",
+                "application/zip" : [ ".zip", ".pages" ],
                 "application/x-rar" : ".rar",
                 
                 # Text file
@@ -37,6 +37,10 @@ format_exts = {
             }
 
 supported_mime_types = format_exts.keys()
+
+def getScriptPath():
+    return os.path.dirname(os.path.realpath(sys.argv[0]))
+
 
 # Parse file name into parts
 def parseFileName(file_name):
@@ -56,7 +60,7 @@ def parseFileName(file_name):
     if m:
         exam_info["class"] = m.group(1)
         exam_info["year"] = int(m.group(2))
-        exam_info["season"] = m.group(3)
+        exam_info["semester"] = m.group(3)
         exam_info["professor"] = m.group(4)
         exam_info["exam"] = m.group(5)
         return exam_info
@@ -105,6 +109,14 @@ def scanDir(srcdir, progCallback, errCallback):
     print("Loading directory list...")
 
     all_files = os.listdir(srcdir)
+    
+    # To make things deterministic, ensure that we sort the files
+    # alphabetically. Otherwise, some people may get the same files,
+    # despite different ranges. (This is due to os.listdir() using
+    # system file listing, which will differ and not be in the exact
+    # same order on another system.)
+    all_files.sort()
+    
     processed_files = 0
     num_files = len(all_files)
 

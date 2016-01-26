@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>556</width>
-    <height>677</height>
+    <height>738</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>IEEE Testbank Tool - 1/1000 - ENEE499H_Bob_2015_F_Bob_Midterm.pdf</string>
+   <string>ENEE499H_Bob_2015_F_Bob_Midterm.pdf (1/1000) - IEEE Testbank Tool</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -221,6 +221,9 @@
           </item>
           <item>
            <widget class="QComboBox" name="semesterCBox">
+            <property name="currentIndex">
+             <number>-1</number>
+            </property>
             <item>
              <property name="text">
               <string>Fall</string>
@@ -259,7 +262,7 @@
              <number>2020</number>
             </property>
             <property name="value">
-             <number>2015</number>
+             <number>2016</number>
             </property>
            </widget>
           </item>

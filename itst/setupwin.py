@@ -4,6 +4,13 @@ import os
 import ansiconv
 import traceback
 
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
+from ies import getScriptPath
 from gui import SetupGUI
 from detailswin import DetailsWindow
 from sortwin import SortWindow
@@ -20,6 +27,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
                             # It sets up layout and widgets that are defined
         self.browseBtn.clicked.connect(self.browse_folder)
         self.goBtn.clicked.connect(self.go)
+        self.resumeBtn.clicked.connect(self.resumeState)
         
         self.aboutBtn.clicked.connect(self.about)
         self.exitBtn.clicked.connect(self.exit)
@@ -47,11 +55,69 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
         self.err_str = ""
         self.iesthread = None
         self.last_focus = None
+        
+        self.state = None
+        
+        self.loadExamData()
     
     # This fixes a crash issue when exiting...
     #def closeEvent(self, event):
     #    print("Exiting...")
     #    exit()
+    
+    def loadExamData(self):
+        exam_data_file = os.path.join(getScriptPath(), "exam_data.yml")
+        
+        file_exist = False
+        try:
+            test_fh = open(exam_data_file)
+            test_fh.close()
+            file_exist = True
+        except:
+            pass
+        
+        if not file_exist:
+            return
+        
+        try:
+            print "Attempting to load: %s" % (exam_data_file)
+            config_fh = open(exam_data_file)
+            self.state = yaml.load(config_fh.read())
+            config_fh.close()
+        except IOError:
+            msgbox = QtGui.QMessageBox(QtGui.QMessageBox.Critical, "Error",
+                "Could not read exam data! Error details:\n\n" + traceback.format_exc(),
+                QtGui.QMessageBox.Ok, self)
+        
+        if self.state:
+            if "user_state" in self.state:
+                if ("current_exam" in self.state["user_state"]) and ("confname" in self.state["user_state"]) and \
+                    ("srcdir" in self.state["user_state"]) and ("start_range" in self.state["user_state"]) and \
+                    ("end_range" in self.state["user_state"]) and ("num_files" in self.state["user_state"]):
+                    if "exam_data" in self.state:
+                        self.prevSessionLbl.setText("Found previous session with the following settings:<br /><br />\n\n<b>Name:</b> %s<br />\n<b>Exam folder:</b><br />\n%s<br />\n<b>Exam range:</b> %i - %i<br />\n<b>Working on:</b> Exam %i / %i" \
+                                                    % ( \
+                                                        self.state["user_state"]["confname"],
+                                                        self.state["user_state"]["srcdir"],
+                                                        self.state["user_state"]["start_range"],
+                                                        self.state["user_state"]["end_range"],
+                                                        self.state["user_state"]["current_exam"],
+                                                        self.state["user_state"]["num_files"],
+                                                    ))
+                        self.resumeBtn.setEnabled(True)
+                    else:
+                        self.prevSessionLbl.setText("Previous session is corrupt and can not be used!")
+                        self.state = None
+                        QtGui.QMessageBox.critical(self, "Error", "Exam data is missing from the save state! The save state may be corrupt.")
+                else:
+                    self.prevSessionLbl.setText("Previous session is corrupt and can not be used!")
+                    self.state = None
+                    QtGui.QMessageBox.critical(self, "Error", "Parts of the user state seems to be missing from the save state! The save state may be corrupt.")
+                
+            else:
+                self.prevSessionLbl.setText("Previous session is corrupt and can not be used!")
+                self.state = None
+                QtGui.QMessageBox.critical(self, "Error", "The user state seems to be missing from the save state! The save state may be corrupt.")
     
     def updateStartRange(self):
         self.startRangeSpinBox.setRange(1, self.endRangeSpinBox.value())
@@ -242,7 +308,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
         start_range = self.startRangeSpinBox.value()
         end_range = self.endRangeSpinBox.value()
         
-        sortWin = SortWindow(curname, curdir, file_table, total_num_files, start_range, end_range)
+        sortWin = SortWindow(curname, curdir, file_table, total_num_files, start_range, end_range, state = self.state)
         self.close()
         sortWin.exec_()
     
@@ -319,6 +385,17 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
                 os.listdir(curdir)
                 # If we made it this far, we should be able to start scanning!
                 if not self.iesthread:
+                    # Final check - do we have state saved?
+                    if self.state:
+                        confirm = QtGui.QMessageBox.warning(self, "Discard saved state?",
+                            "You have opted to start a new session. Not resuming will result in the saved state being deleted. Are you sure you want to start a new session? (If you're not sure, say no.)",
+                            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                        if not (confirm == QtGui.QMessageBox.Yes):
+                            return
+                        
+                        # If we continue, clear the state.
+                        self.state = None
+                        
                     # Disable all fields
                     self.testbankDirTxt.setEnabled(False)
                     self.browseBtn.setEnabled(False)
@@ -333,6 +410,86 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
                     self.iesthread.progSignal.connect(self.prog_ies)
                     self.iesthread.errSignal.connect(self.err_ies)
                     self.iesthread.tableSignal.connect(self.table_ies)
+                    self.iesthread.start()
+                else:
+                    print("Error: Thread already created and started!")
+                    raise Exception("Internal IEEE Exam Scanner thread already created and started!")
+            except (IOError, OSError), err:
+                print("IOError/OSError: " + str(err))
+                QtGui.QMessageBox.critical(self, "Error", str(err))
+            except Exception, err:
+                print("Critical error occurred! Something went really wrong...")
+                print(traceback.format_exc())
+                msgbox = QtGui.QMessageBox(QtGui.QMessageBox.Critical, "Error",
+                    "A critical error occurred! This error is a bug, and may cause issues if you continue running this program.",
+                    QtGui.QMessageBox.Abort | QtGui.QMessageBox.Ignore, self)
+                msgbox.setDefaultButton(QtGui.QMessageBox.Abort)
+                msgbox.setEscapeButton(QtGui.QMessageBox.Abort)
+                msgbox.setInformativeText(traceback.format_exc())
+                msgbox.setWindowModality(QtCore.Qt.ApplicationModal)
+                res = msgbox.exec_()
+                if res == QtGui.QMessageBox.Abort:
+                    QtGui.QApplication.quit()
+        elif os.path.isfile(curdir):
+            print("Error: file specified, not directory...")
+            QtGui.QMessageBox.critical(self, "Error", "You specified a file, not a directory!")
+        else:
+            print("Error: can't find directory specified!")
+            QtGui.QMessageBox.critical(self, "Error", "The directory you specified does not exist!")
+    
+    def table_ies_resume(self, file_table, total_num_files):
+        curname = self.state["user_state"]["confname"]
+        curdir = self.state["user_state"]["srcdir"]
+        start_range = self.state["user_state"]["start_range"]
+        end_range = self.state["user_state"]["end_range"]
+        
+        # Validate state
+        if not "exam_data" in self.state:
+            QtGui.QMessageBox.critical(self, "Error", "Exam data is missing from the save state! The save state may be corrupt.")
+            return
+        
+        # Validate file_table
+        missing_files = []
+        file_table_mini = [ x[0] for x in file_table ]
+        for data_id in self.state["exam_data"]:
+            data_element = self.state["exam_data"][data_id]
+            if not (data_element["file_name"] in file_table_mini):
+                missing_files.append(data_element["file_name"])
+        
+        if len(missing_files) > 0:
+            QtGui.QMessageBox.critical(self, "Error", "Some file(s) from the saved state were not found!\n\nFiles that are missing:\n\n%s" % "\n".join(missing_files))
+            return
+        
+        # Validate total_num_files
+        if total_num_files < self.state["user_state"]["num_files"]:
+            QtGui.QMessageBox.critical(self, "Error", "The number of files detected is less than the number of files found in the saved state - cannot continue!")
+            return
+        
+        sortWin = SortWindow(curname, curdir, file_table, total_num_files, start_range, end_range, state = self.state)
+        self.close()
+        sortWin.exec_()
+    
+    def resumeState(self):
+        curdir = self.state["user_state"]["srcdir"]
+        if os.path.isdir(curdir):
+            try:
+                os.listdir(curdir)
+                # If we made it this far, we should be able to start scanning!
+                if not self.iesthread:
+                    # Disable all fields
+                    self.testbankDirTxt.setEnabled(False)
+                    self.browseBtn.setEnabled(False)
+                    self.goBtn.setEnabled(False)
+                    
+                    # Enable the progress bar
+                    self.progressBar.setEnabled(True)
+                    
+                    # Initialize and start thread
+                    self.iesthread = IESScanThread(curdir)
+                    self.iesthread.finished.connect(self.end_ies)
+                    self.iesthread.progSignal.connect(self.prog_ies)
+                    self.iesthread.errSignal.connect(self.err_ies)
+                    self.iesthread.tableSignal.connect(self.table_ies_resume)
                     self.iesthread.start()
                 else:
                     print("Error: Thread already created and started!")
