@@ -400,6 +400,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
                     self.testbankDirTxt.setEnabled(False)
                     self.browseBtn.setEnabled(False)
                     self.goBtn.setEnabled(False)
+                    self.resumeBtn.setEnabled(False)
                     
                     # Enable the progress bar
                     self.progressBar.setEnabled(True)
@@ -480,6 +481,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
                     self.testbankDirTxt.setEnabled(False)
                     self.browseBtn.setEnabled(False)
                     self.goBtn.setEnabled(False)
+                    self.resumeBtn.setEnabled(False)
                     
                     # Enable the progress bar
                     self.progressBar.setEnabled(True)
