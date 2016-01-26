@@ -10,7 +10,12 @@ from itst import SetupWindow
 #      (on Windows, maybe other platforms as well)
 def main():
     # Initialize terminal colors for Windows (and do nothing for *nix)
-    colorama.init()
+    # For frozen apps, only do it for console EXEs
+    if getattr(sys, 'frozen', False):
+        if sys.frozen == 'console_exe':
+            colorama.init()
+    else:
+        colorama.init()
 
     # Create the application and the main window
     app = QtGui.QApplication(sys.argv)

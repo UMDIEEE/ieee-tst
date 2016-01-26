@@ -90,7 +90,18 @@ def scanDir(srcdir, progCallback, errCallback):
     print("Loading magic mime file...")
     
     if sys.platform == "win32":
-        magic_file_path = os.path.join(getScriptPath(), "magic-db", "magic.mgc")
+        # Accomodate frozen exes
+        if getattr(sys, 'frozen', False):
+            print "Frozen EXE detected!"
+            print "getScriptPath() returns: %s" % getScriptPath()
+            magic_file_path = os.path.join(os.path.dirname(sys.executable), "magic-db", "magic.mgc")
+            print "Trying path #1: %s" % magic_file_path
+            if not os.path.exists(magic_file_path):
+                # Probably PyInstaller --onefile, attempt to fetch _MEIPASS attribute.
+                magic_file_path = os.path.join(getattr(sys, '_MEIPASS', os.getcwd()), "magic-db", "magic.mgc")
+                print "Trying path #2: %s" % magic_file_path
+        else:
+            magic_file_path = os.path.join(getScriptPath(), "magic-db", "magic.mgc")
         try:
             fh = open(magic_file_path, "r")
             fh.close()
