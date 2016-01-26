@@ -34,8 +34,10 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.end_range = end_range
         self.state = state
         
+        self.current_exam = -1
+        
         if state == None:
-            self.current_exam = self.start_range
+            current_exam = self.start_range
             #self.old_exam = self.current_exam
             self.state = {
                             "user_state" : {
@@ -56,12 +58,15 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                     self.state["exam_data"][f_index] = { "file_name" : f_entry[0], "filled": False, "data" : {} }
                 f_index += 1
         else:
-            self.current_exam = self.state["user_state"]["current_exam"]
+            current_exam = self.state["user_state"]["current_exam"]
             #self.old_exam = self.current_exam
         
         # This is an invalid value, but it will get changed once
         # self.changeExam() is called!
-        self.old_exam = -1
+        #self.old_exam = -1
+        
+        # Viewing exam (for tooltip updates)
+        self.viewing_exam = current_exam
         
         self.formDirty = False
         self.examChanging = False
@@ -76,8 +81,10 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.testSlider.setRange(start_range, end_range)
         
         self.testSlider.sliderPressed.connect(self.showExamTooltip)
-        self.testSlider.sliderReleased.connect(self.changeExam)
-        self.testSlider.valueChanged.connect(self.updateCurrentExam)
+        #self.testSlider.sliderReleased.connect(self.changeExam)
+        self.testSlider.setTracking(False)
+        self.testSlider.valueChanged.connect(self.changeExamSlider)
+        self.testSlider.sliderMoved.connect(self.updateCurrentExam)
         
         self.prevTestBtn.clicked.connect(self.decreaseExam)
         self.nextTestBtn.clicked.connect(self.increaseExam)
@@ -128,7 +135,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         
         ###########
         
-        self.changeExam()
+        self.changeExam(current_exam)
         
         #self.goBtn.clicked.connect(self.go)
         
@@ -710,15 +717,15 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
     
     def showExamTooltip(self):
         tooltipPos = self.testSlider.mapToGlobal(self.testSlider.pos())
-        self.current_exam = self.testSlider.value()
-        exam_data = self.state["exam_data"][self.current_exam]
+        #self.current_exam = self.testSlider.value()
+        exam_data = self.state["exam_data"][self.viewing_exam]
         actual_exam_data = exam_data["data"]
         
         fetch_actual_exam_data = lambda x, d=None: (actual_exam_data[x] if x in actual_exam_data else (d if d != None else "N/A"))
         
-        print "showExamTooltip: %i / %i" % (self.current_exam, self.num_files)
+        print "showExamTooltip: %i / %i" % (self.viewing_exam, self.num_files)
         
-        tooltipText  = "<b>Exam %i / %i</b><br />" % (self.current_exam, self.num_files)
+        tooltipText  = "<b>Exam %i / %i</b><br />" % (self.viewing_exam, self.num_files)
         tooltipText += "<b>File:</b> %s<br />" % (exam_data["file_name"])
         
         if exam_data["filled"]:
@@ -752,39 +759,30 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             return True
     
     def firstExam(self):
-        self.current_exam = self.start_range
-        self.changeExam()
+        self.changeExam(self.start_range)
     
     def lastExam(self):
-        self.current_exam = self.end_range
-        self.changeExam()
+        self.changeExam(self.end_range)
     
     def decreaseExam(self):
         if self.current_exam > self.start_range:
-            self.current_exam -= 1
-            
-            self.changeExam()
+            self.changeExam(self.current_exam - 1)
     
     def increaseExam(self):
         if self.current_exam < self.end_range:
-            self.current_exam += 1
-            
-            self.changeExam()
+            self.changeExam(self.current_exam + 1)
     
-    def changeExam(self):
+    def changeExam(self, newExamIndex):
         print "changeExam called! (Called by: %s)" % sys._getframe().f_back.f_code.co_name
-        if self.old_exam == self.current_exam:
+        if self.current_exam == newExamIndex:
             print "  -> Ignoring call, old_exam == current_exam"
             return
         
-        # Save current_exam, and restore it later.
-        current_exam = self.current_exam
-        self.current_exam = self.old_exam
+        confirm = self.confirmExamState()
         
-        if self.confirmExamState():
+        if confirm:
             # Change old exam to new one
-            self.current_exam = current_exam
-            self.old_exam = self.current_exam
+            self.current_exam = newExamIndex
             
             # Set examChanging to prevent dirty set
             self.examChanging = True
@@ -810,26 +808,39 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                 self.nextTestBtn.setEnabled(True)
                 self.lastTestBtn.setEnabled(True)
             
-            self.testSlider.setValue(self.current_exam)
+            #self.testSlider.setValue(self.current_exam)
             
             self.populateExamData()
             
             # Set examChanging to allow dirty set
             self.examChanging = False
-        else:
-            self.current_exam = self.old_exam
-            self.testSlider.setValue(self.current_exam)
+        #else:
+        #    self.testSlider.setValue(self.current_exam)
         
         # Set user state for saving later
         self.state["user_state"]["current_exam"] = self.current_exam
+        
+        # Return result
+        return confirm
     
     def updateCurrentExam(self, examIndex):
-        self.current_exam = examIndex
-        print "updateCurrentExam: %i / %i" % (self.current_exam, self.num_files)
+        self.viewing_exam = examIndex
+        print "updateCurrentExam: %i / %i" % (self.viewing_exam, self.num_files)
         
         if self.testSlider.isSliderDown():
             print "skip - call tooltip"
             self.showExamTooltip()
         else:
-            self.changeExam()
+            print "slider not down"
+        #else:
+        #    self.changeExam()
     
+    def changeExamSlider(self, examIndex):
+        print "changeExamSlider called with examIndex = %i" % examIndex
+        confirm = QtGui.QMessageBox.question(self, "Save exam?",
+                "You have not saved the exam data yet. Do you want to save the exam data before BOOM? All unsaved fields will be erased.",
+                QtGui.QMessageBox.Save, QtGui.QMessageBox.Discard, QtGui.QMessageBox.Cancel)
+        #self.changeExam(self.testSlider.value())
+        #if self.changeExam():
+        #    self.testSlider.blockSignals(True)
+            
