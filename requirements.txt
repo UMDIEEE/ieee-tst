@@ -1,0 +1,4 @@
+colorama
+pyyaml
+ansiconv
+PyQt4
