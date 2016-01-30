@@ -131,7 +131,7 @@ class SetupWindow(QtGui.QDialog, SetupGUI.Ui_setupDlg):
     
     def about(self):
         msgbox = QtGui.QMessageBox(QtGui.QMessageBox.Information, "About",
-            "IEEE Sorting Tool v1.0 by Albert Huang<br /><br /><a style=\"color: white;\" href=\"https://github.com/UMDIEEE/ieee-tst\">GitHub</a>",
+            "<b>IEEE Sorting Tool v1.0</b><br />By Albert Huang for IEEE@UMD!<br />License: <a style=\"color: #FF6A00;\" href=\"https://github.com/UMDIEEE/ieee-tst/blob/master/LICENSE.txt\">GPLv3</a><br /><br />Thanks to everyone for helping out with this tool, and for helping out with the testbank!<br /><br />Wanna see the code? Have bugs to report?<br />All of that can be found on our project page on GitHub:<br /><a style=\"color: #FF6A00;\" href=\"https://github.com/UMDIEEE/ieee-tst\">GitHub</a>",
             QtGui.QMessageBox.Ok, self)
         msgbox.setTextFormat(QtCore.Qt.RichText)
         msgbox.setWindowModality(QtCore.Qt.ApplicationModal)
