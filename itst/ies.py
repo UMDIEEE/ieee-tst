@@ -41,6 +41,8 @@ supported_mime_types = format_exts.keys()
 def getScriptPath():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
 
+def getExecName():
+    return os.path.basename(sys.argv[0])
 
 # Parse file name into parts
 def parseFileName(file_name):

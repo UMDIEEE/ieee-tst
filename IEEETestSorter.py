@@ -4,7 +4,7 @@ import qdarkstyle
 import sys
 import colorama
 
-from itst import SetupWindow
+from itst import SetupWindow, getExecName
 
 # NOTE: wrapping things in main() seems to prevent PyQT crash on exit
 #      (on Windows, maybe other platforms as well)
@@ -24,8 +24,10 @@ def main():
     # This is needed to ensure that things clean up nicely
     #app.setActiveWindow(window)
 
-    # Setup stylesheet
-    app.setStyleSheet(qdarkstyle.load_stylesheet(pyside = False))
+    # Setup stylesheet... but only if the exec name doesn't contain
+    # "light"!
+    if not "light" in getExecName().lower():
+        app.setStyleSheet(qdarkstyle.load_stylesheet(pyside = False))
 
     # Run
     window.show()
