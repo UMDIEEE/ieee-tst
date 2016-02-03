@@ -25,6 +25,10 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.setupUi(self)  # This is defined in design.py file automatically
                             # It sets up layout and widgets that are defined
         
+        self.setWindowFlags(self.windowFlags() &
+            QtCore.Qt.WindowMinimizeButtonHint &
+            QtCore.Qt.WindowSystemMenuHint)
+        
         # Save input
         self.file_table = file_table
         self.num_files = num_files
