@@ -324,7 +324,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                 elif exam_data["data"]["type"] == "Final":
                     self.testTypeFinalRadio.setChecked(True)
                 else:
-                    print("Warning: Invalid exam type detected! (Got: %s)" % exam_data["data"]["status"])
+                    print("Warning: Invalid exam type detected! (Got: %s)" % exam_data["data"]["type"])
             if "year" in exam_data["data"]:
                 self.yearSpinBox.setValue(exam_data["data"]["year"])
             if "testNum" in exam_data["data"]:
