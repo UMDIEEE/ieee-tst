@@ -830,14 +830,14 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                 self.nextTestBtn.setEnabled(True)
                 self.lastTestBtn.setEnabled(True)
             
-            #self.testSlider.setValue(self.current_exam)
+            self.testSlider.setValue(self.current_exam)
             
             self.populateExamData()
             
             # Set examChanging to allow dirty set
             self.examChanging = False
-        #else:
-        #    self.testSlider.setValue(self.current_exam)
+        else:
+            self.testSlider.setValue(self.current_exam)
         
         # Set user state for saving later
         self.state["user_state"]["current_exam"] = self.current_exam
@@ -859,10 +859,10 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
     
     def changeExamSlider(self, examIndex):
         print "changeExamSlider called with examIndex = %i" % examIndex
-        confirm = QtGui.QMessageBox.question(self, "Save exam?",
-                "You have not saved the exam data yet. Do you want to save the exam data before BOOM? All unsaved fields will be erased.",
-                QtGui.QMessageBox.Save, QtGui.QMessageBox.Discard, QtGui.QMessageBox.Cancel)
-        #self.changeExam(self.testSlider.value())
+        #confirm = QtGui.QMessageBox.question(self, "Save exam?",
+        #        "You have not saved the exam data yet. Do you want to save the exam data before BOOM? All unsaved fields will be erased.",
+        #        QtGui.QMessageBox.Save, QtGui.QMessageBox.Discard, QtGui.QMessageBox.Cancel)
+        self.changeExam(self.testSlider.value())
         #if self.changeExam():
         #    self.testSlider.blockSignals(True)
             
