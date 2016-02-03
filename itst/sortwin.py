@@ -871,13 +871,45 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         else:
             return ""
     
+    def convertOrigin(self, actual_exam_data):
+        if "origin" in actual_exam_data:
+            if actual_exam_data["origin"] == "scanned":
+                return "Scanned"
+            elif actual_exam_data["origin"] == "ocrwithimage":
+                return "OCR with Image"
+            elif actual_exam_data["origin"] == "ocrwithoutimage":
+                return "OCR without Image"
+            elif actual_exam_data["origin"] == "original":
+                return "Original"
+            else:
+                return "<span style='color: #800080'><b>INVALID ORIGIN! (Bug or corrupt file?)</b></span>"
+        else:
+            return "N/A"
+    
+    def convertIncludes(self, actual_exam_data):
+        if "includes" in actual_exam_data:
+            ret = ""
+            print "DEBUG: convertIncludes data is %s" % actual_exam_data["includes"]
+            if "problems" in actual_exam_data["includes"]:
+                ret += "Problems"
+            if "solutions" in actual_exam_data["includes"]:
+                if ret == "":
+                    ret += "Solutions"
+                else:
+                    ret += " and Solutions"
+            if (ret == "") and (actual_exam_data["includes"] != ""):
+                return "<span style='color: #800080'><b>INVALID INCLUDES! (Bug or corrupt file?)</b></span>"
+            return ret
+        else:
+            return "N/A"
+    
     def showExamTooltip(self):
         tooltipPos = self.testSlider.mapToGlobal(self.testSlider.pos())
         #self.current_exam = self.testSlider.value()
         exam_data = self.state["exam_data"][self.viewing_exam]
         actual_exam_data = exam_data["data"]
         
-        fetch_actual_exam_data = lambda x, d=None: (actual_exam_data[x] if x in actual_exam_data else (d if d != None else "N/A"))
+        fetch_actual_exam_data = lambda x, d=None: (str(actual_exam_data[x]) if x in actual_exam_data else (d if d != None else "N/A"))
         
         print "showExamTooltip: %i / %i" % (self.viewing_exam, self.num_files)
         
@@ -890,7 +922,9 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             tooltipText += "<b>When:</b> %s %s<br />" % (fetch_actual_exam_data("semester"), fetch_actual_exam_data("year", ""))
             tooltipText += "<b>Professor (last, first):</b><br />%s, %s<br />" % (fetch_actual_exam_data("profLastName", "<i>(No last name)</i>"), \
                                                                              fetch_actual_exam_data("profFirstName", "<i>(No first name)</i>"))
-            tooltipText += "<b>Exam:</b> %s %s<br />" % (fetch_actual_exam_data("type"), str(fetch_actual_exam_data("testNum", "")))
+            tooltipText += "<b>Exam:</b> %s %s<br />" % (fetch_actual_exam_data("type"), fetch_actual_exam_data("testNum", ""))
+            tooltipText += "<b>Origin:</b> %s<br />" % (self.convertOrigin(actual_exam_data))
+            tooltipText += "<b>Includes:</b> %s<br />" % (self.convertIncludes(actual_exam_data))
             tooltipText += "<b>Additional exam info:</b><br />%s<br />" % (fetch_actual_exam_data("info"))
             tooltipText += "<b>File notes:</b><br />%s" % (fetch_actual_exam_data("fileNotes"))
         else:
