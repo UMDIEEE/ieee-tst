@@ -613,7 +613,7 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         if not (confirm == QtGui.QMessageBox.Yes):
             return
         
-        self.current_exam = self.testSlider.value()
+        #self.current_exam = self.testSlider.value()
         exam_data = self.state["exam_data"][self.current_exam]
         fndata = parseFileName(exam_data["file_name"])
         
