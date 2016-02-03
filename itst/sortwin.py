@@ -129,6 +129,16 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         # Test number spinbox
         self.testNumSpinBox.valueChanged.connect(self.changeFormHandler)
         
+        # Test Scan/Original Type - radio button group
+        self.testScannedRadio.toggled.connect(self.changeFormHandler)
+        self.testOCRWithImageRadio.toggled.connect(self.changeFormHandler)
+        self.testOCRWithoutImageRadio.toggled.connect(self.changeFormHandler)
+        self.testOriginalRadio.toggled.connect(self.changeFormHandler)
+        
+        # Contains problems/solutions
+        self.testProblemsCheckBox.toggled.connect(self.changeFormHandler)
+        self.testSolutionsCheckBox.toggled.connect(self.changeFormHandler)
+        
         # Addl exam info + file notes
         self.addlExamInfoTxt.textChanged.connect(self.changeFormHandler)
         self.fileNotesTxt.textChanged.connect(self.changeFormHandler)
@@ -258,6 +268,23 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         # Set testNum
         exam_data["data"]["testNum"] = self.testNumSpinBox.value()
         
+        # Set origin
+        if self.testScannedRadio.isChecked(): exam_data["data"]["origin"] = "scanned"
+        elif self.testOCRWithImageRadio.isChecked(): exam_data["data"]["origin"] = "ocrwithimage"
+        elif self.testOCRWithoutImageRadio.isChecked(): exam_data["data"]["origin"] = "ocrwithoutimage"
+        elif self.testOriginalRadio.isChecked(): exam_data["data"]["origin"] = "original"
+        else: exam_data["data"].pop("type", None)
+        
+        # Set includes
+        # This one's kinda funky, but we pop it off, then check for existence
+        exam_data["data"].pop("includes", None)
+        if self.testProblemsCheckBox.isChecked(): exam_data["data"]["includes"] = "problems"
+        if self.testSolutionsCheckBox.isChecked():
+            if "includes" in exam_data["data"]:
+                exam_data["data"]["includes"] += ",solutions"
+            else:
+                exam_data["data"]["includes"] = "solutions"
+        
         # Set fileNotes
         if self.fileNotesTxt.toPlainText(): exam_data["data"]["fileNotes"] = str(self.fileNotesTxt.toPlainText())
         else: exam_data["data"].pop("fileNotes", None)
@@ -325,6 +352,24 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                     self.testTypeFinalRadio.setChecked(True)
                 else:
                     print("Warning: Invalid exam type detected! (Got: %s)" % exam_data["data"]["type"])
+            if "origin" in exam_data["data"]:
+                if exam_data["data"]["origin"] == "scanned":
+                    self.testScannedRadio.setChecked(True)
+                elif exam_data["data"]["origin"] == "ocrwithimage":
+                    self.testOCRWithImageRadio.setChecked(True)
+                elif exam_data["data"]["origin"] == "ocrwithoutimage":
+                    self.testOCRWithoutImageRadio.setChecked(True)
+                elif exam_data["data"]["origin"] == "original":
+                    self.testOriginalRadio.setChecked(True)
+                else:
+                    print("Warning: Invalid origin scan/original detected! (Got: %s)" % exam_data["data"]["origin"])
+            if "includes" in exam_data["data"]:
+                if "problems" in exam_data["data"]["includes"]:
+                    self.testProblemsCheckBox.setChecked(True)
+                if "solutions" in exam_data["data"]["includes"]:
+                    self.testSolutionsCheckBox.setChecked(True)
+                if (not (("problems" in exam_data["data"]["includes"]) or ("solutions" in exam_data["data"]["includes"]))) and exam_data["data"]["includes"] != "":
+                    print("Warning: Invalid includes detected! (Got: %s)" % exam_data["data"]["includes"])
             if "year" in exam_data["data"]:
                 self.yearSpinBox.setValue(exam_data["data"]["year"])
             if "testNum" in exam_data["data"]:
@@ -393,6 +438,24 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         # Test number spinbox
         self.testNumSpinBox.setValue(0)
         
+        # Exam scan type - Scanned/OCRw/woImage/Original radio button group
+        self.clearButtons(self.testScanOrigBtnGroup,
+                                [
+                                    self.testScannedRadio,
+                                    self.testOCRWithImageRadio,
+                                    self.testOCRWithoutImageRadio,
+                                    self.testOriginalRadio,
+                                ]
+                            )
+        
+        # Exam contains - checkboxes
+        self.clearButtons(None,
+                                [
+                                    self.testProblemsCheckBox,
+                                    self.testSolutionsCheckBox,
+                                ]
+                            )
+        
         # Addl exam info + file notes
         self.addlExamInfoTxt.setText("")
         self.fileNotesTxt.setPlainText("")
@@ -457,6 +520,16 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.validateWidget(self.testTypeQuizRadio)
         self.validateWidget(self.testTypeMidtermRadio)
         self.validateWidget(self.testTypeFinalRadio)
+        
+        # Scanned/Orig radio button group
+        self.validateWidget(self.testScannedRadio)
+        self.validateWidget(self.testOCRWithImageRadio)
+        self.validateWidget(self.testOCRWithoutImageRadio)
+        self.validateWidget(self.testOriginalRadio)
+        
+        # Contains Checkboxes
+        self.validateWidget(self.testProblemsCheckBox)
+        self.validateWidget(self.testSolutionsCheckBox)
         
         # Test number spinbox
         self.validateWidget(self.testNumSpinBox)
@@ -569,6 +642,67 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
                         self.setDirtyBit(self.sender())
                     
                     print "testTypeFinalRadio"
+                elif self.sender() is self.testScannedRadio:
+                    if not (("origin" in exam_data["data"]) and (exam_data["data"]["origin"] == "scanned")):
+                        print "invalidated type / testScannedRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testScannedRadio"
+                elif self.sender() is self.testOCRWithImageRadio:
+                    if not (("origin" in exam_data["data"]) and (exam_data["data"]["origin"] == "ocrwithimage")):
+                        print "invalidated type / testOCRWithImageRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testOCRWithImageRadio"
+                elif self.sender() is self.testOCRWithoutImageRadio:
+                    if not (("origin" in exam_data["data"]) and (exam_data["data"]["origin"] == "ocrwithoutimage")):
+                        print "invalidated type / testOCRWithoutImageRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testOCRWithoutImageRadio"
+                elif self.sender() is self.testOriginalRadio:
+                    if not (("origin" in exam_data["data"]) and (exam_data["data"]["origin"] == "original")):
+                        print "invalidated type / testOriginalRadio"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testOriginalRadio"
+                else:
+                    self.handleUnknownWidget(self.sender())
+            
+        elif self.sender().__class__ is QtGui.QCheckBox:
+            print "QCheckBox"
+            
+            if not arg:
+                # Which widget?
+                if self.sender() is self.testProblemsCheckBox:
+                    if not (("includes" in exam_data["data"]) and (not ("problems" in exam_data["data"]["includes"]))):
+                        print "invalidated type / testProblemsCheckBox"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testProblemsCheckBox"
+                elif self.sender() is self.testSolutionsCheckBox:
+                    if not (("includes" in exam_data["data"]) and (not ("solutions" in exam_data["data"]["includes"]))):
+                        print "invalidated type / testSolutionsCheckBox"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testSolutionsCheckBox"
+                else:
+                    self.handleUnknownWidget(self.sender())
+
+            else:
+                # Which widget?
+                if self.sender() is self.testProblemsCheckBox:
+                    if not (("includes" in exam_data["data"]) and ("problems" in exam_data["data"]["includes"])):
+                        print "invalidated type / testProblemsCheckBox"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testProblemsCheckBox"
+                elif self.sender() is self.testSolutionsCheckBox:
+                    if not (("includes" in exam_data["data"]) and ("solutions" in exam_data["data"]["includes"])):
+                        print "invalidated type / testSolutionsCheckBox"
+                        self.setDirtyBit(self.sender())
+                    
+                    print "testSolutionsCheckBox"
                 else:
                     self.handleUnknownWidget(self.sender())
             
