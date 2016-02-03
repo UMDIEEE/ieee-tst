@@ -345,18 +345,28 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             self.revertBtn.setEnabled(False)
             self.saveBtn.setEnabled(False)
     
-    def clearAllWidgets(self):
-        # Test status radio
+    def clearButtons(self, group, btns):
         # Exclusive must be turned off, or otherwise setting one to
         # False will trigger another
-        self.testValidButtonGroup.setExclusive(False)
+        if group:
+            group.setExclusive(False)
         
-        self.validTestAllGoodRadio.setChecked(False)
-        self.validTestWrongTestRadio.setChecked(False)
-        self.validTestJunkRadio.setChecked(False)
+        for btn in btns:
+            btn.setChecked(False)
         
-        # Re-enable exclusive
-        self.testValidButtonGroup.setExclusive(True)
+        # Re-enable exclusive (for button groups)
+        if group:
+            group.setExclusive(True)
+    
+    def clearAllWidgets(self):
+        # Test status radio buttons
+        self.clearButtons(self.testValidBtnGroup,
+                                [
+                                    self.validTestAllGoodRadio,
+                                    self.validTestWrongTestRadio,
+                                    self.validTestJunkRadio,
+                                ]
+                            )
         
         # Class textbox
         self.classTxt.setText("")
@@ -372,13 +382,13 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.profFirstNameTxt.setText("")
         
         # Exam type - Quiz/Midterm/Final radio button group
-        self.testTypeBtnGroup.setExclusive(False)
-        
-        self.testTypeQuizRadio.setChecked(False)
-        self.testTypeMidtermRadio.setChecked(False)
-        self.testTypeFinalRadio.setChecked(False)
-        
-        self.testTypeBtnGroup.setExclusive(True)
+        self.clearButtons(self.testTypeBtnGroup,
+                                [
+                                    self.testTypeQuizRadio,
+                                    self.testTypeMidtermRadio,
+                                    self.testTypeFinalRadio,
+                                ]
+                            )
         
         # Test number spinbox
         self.testNumSpinBox.setValue(0)
