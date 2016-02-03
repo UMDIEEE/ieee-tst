@@ -83,8 +83,15 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
         self.testSlider.sliderPressed.connect(self.showExamTooltip)
         #self.testSlider.sliderReleased.connect(self.changeExam)
         self.testSlider.setTracking(False)
-        self.testSlider.valueChanged.connect(self.changeExamSlider)
-        self.testSlider.sliderMoved.connect(self.updateCurrentExam)
+        
+        # We need QueuedConnection to make things workaround a Qt bug
+        # with sliders moving around by themselves when a QDialog is
+        # present...
+        self.testSlider.valueChanged.connect(self.changeExamSlider, QtCore.Qt.QueuedConnection)
+        self.testSlider.sliderMoved.connect(self.updateCurrentExam, QtCore.Qt.QueuedConnection)
+        
+        #self.testSlider.valueChanged.connect(self.changeExamSlider)
+        #self.testSlider.sliderMoved.connect(self.updateCurrentExam)
         
         self.prevTestBtn.clicked.connect(self.decreaseExam)
         self.nextTestBtn.clicked.connect(self.increaseExam)
