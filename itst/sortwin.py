@@ -425,7 +425,12 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             self.invalidateWidget(widget)
     
     def invalidateWidget(self, widget):
-        widget.setStyleSheet("background-color: #660000;")
+        if widget.__class__ is QtGui.QComboBox:
+            # Workaround for bug when color isn't set for the actual
+            # combobox (but instead only the list of items in the combo)
+            widget.setStyleSheet("background-color: #660000; color: white; padding: 0px 0px 0px 0px; /*This makes text colour work*/")
+        else:
+            widget.setStyleSheet("background-color: #660000; color: white;")
     
     def validateWidget(self, widget):
         widget.setStyleSheet("")
