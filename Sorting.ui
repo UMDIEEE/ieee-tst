@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>ENEE499H_Bob_2015_F_Bob_Midterm.pdf (1/1000) - IEEE Testbank Tool</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QVBoxLayout" name="sortingLayout">
