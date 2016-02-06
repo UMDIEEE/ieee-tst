@@ -744,12 +744,12 @@ class SortWindow(QtGui.QDialog, SortingGUI.Ui_sortDlg):
             self.handleUnknownWidget(self.sender())
     
     def autoFillCurrentExam(self):
-        confirm = QtGui.QMessageBox.question(self, "Perform autofill?",
-            "Autofill will try to guess the fields based on the file name. Doing autofill will overwrite any fields that have not been saved. Are you sure you want to autofill?",
-            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        
-        if not (confirm == QtGui.QMessageBox.Yes):
-            return
+        #confirm = QtGui.QMessageBox.question(self, "Perform autofill?",
+        #    "Autofill will try to guess the fields based on the file name. Doing autofill will overwrite any fields that have not been saved. Are you sure you want to autofill?",
+        #    QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        #
+        #if not (confirm == QtGui.QMessageBox.Yes):
+        #    return
         
         #self.current_exam = self.testSlider.value()
         exam_data = self.state["exam_data"][self.current_exam]
